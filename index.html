@@ -1,7 +1,7 @@
-<script src="/socket.io/socket.io.js"></script>
+<script src="http://hidden-wildwood-8127.herokuapp.com/socket.io/socket.io.js"></script>
 <script>
   // var socket = io.connect('http://localhost:8080');
-  socket = io.connect();
+  socket = io.connect('http://hidden-wildwood-8127.herokuapp.com/');
   socket.on('news', function (data) {
     console.log(data);
     socket.emit('my other event', { my: 'data' });

@@ -1,9 +1,15 @@
 var port=process.env.PORT || 3000;
 var http=require('http');
-var app=http.createServer(function(req,res){
+var express = require('express');
+var app=express.createServer(function(req,res){
     res.write("server listening to port:"+port);
     res.end();
 }).listen(port);
+
+app.get('/', function (req, res) {
+  res.render('index', { layout: false });
+});
+
 socket=require("socket.io");
 io=socket.listen(app);
 io.configure(function () { 
