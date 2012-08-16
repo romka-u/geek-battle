@@ -10,9 +10,23 @@ io.configure(function () {
   io.set("transports", ["xhr-polling"]); 
   io.set("polling duration", 10); 
 });
-io.sockets.on("connection",function(socket){
+/* io.sockets.on("connection",function(socket){
     console.log("new connection");
     socket.on("eventA",function(data){
         io.sockets.emit("eventB",data);
     }); 
+}); */
+
+io.sockets.on('connection', function (socket) {
+  socket.on('set nickname', function (name) {
+    socket.set('nickname', name, function () {
+      socket.emit('ready');
+    });
+  });
+
+  socket.on('msg', function () {
+    socket.get('nickname', function (err, name) {
+      console.log('Chat message by ', name);
+    });
+  });
 });
