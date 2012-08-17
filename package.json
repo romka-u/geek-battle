@@ -1,15 +1,15 @@
 {
-  "name": "geek-battle",
-  "version": "0.0.1",
-  "dependencies": {
-    "express": "2.5.x",
-    "socket.io": "0.9.1",
-    "active-x-obfuscator": "latest",
-    "jquery": "latest",
-    "xmlhttprequest": "latest"
-  },
-  "engines": {
-    "node": "0.8.x",
-    "npm": "1.1.x"
-  }
+    "name": "geek-battle",
+    "version": "0.0.1",
+    "dependencies": {
+        "express": "2.5.x",
+        "socket.io": "0.9.1",
+        "active-x-obfuscator": "latest",
+        "jquery": "latest",
+        "xmlhttprequest": "latest"
+    },
+    "engines": {
+        "node": "0.8.x",
+        "npm": "1.1.x"
+    }
 }

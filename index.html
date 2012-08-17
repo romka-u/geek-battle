@@ -4,7 +4,7 @@
             Task viewer
         </title>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-	<script src="http://hidden-wildwood-8127.herokuapp.com/socket.io/socket.io.js"></script>
+        <script src="http://hidden-wildwood-8127.herokuapp.com/socket.io/socket.io.js"></script>
         <script type="text/javascript">
 
         function getTask() {
@@ -14,12 +14,13 @@
         }
 
         function showTask(task) {
-	    if (task == null) {
-		$('#question').attr('src', 'http://260days.ca/wp-content/uploads/2011/03/done.gif');
-		for (var i = 0; i < 4; i++)
-		    $('#choice_' + i).addClass('hide');
-		return;
-	    }
+            if (task == null) {
+                $('#question').attr('src', 'http://260days.ca/wp-content/uploads/2011/03/done.gif');
+                for (var i = 0; i < 4; i++)
+                    $('#choice_' + i).addClass('hide');
+                return;
+            }
+
             $(document.body).removeClass('first');
             var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
             $('#question').attr('src', url + '&type=question');
@@ -29,7 +30,7 @@
                 $('#choice_' + i).attr('src', url + '&type=choice&number=' + i);
                 $('#choice_' + i).addClass(i === task.correct ? 'correct' : 'incorrect');
             }
-	    $('.hide').removeClass('hide');
+            $('.hide').removeClass('hide');
         }
 
         function showTasksSelection(tasks) {
@@ -43,24 +44,24 @@
         $(function() {
             // $.getJSON('/tasks', showTasksSelection);
             $('#next').on('click', function() {
-		socket.emit('get task');
-	    });
+                socket.emit('get task');
+            });
             $('#newgame').on('click', function() {
-		$('#status').html('Loading...');
-		socket.emit('new game');
-	    });
+                $('#status').html('Loading...');
+                socket.emit('new game');
+            });
         });
 
         </script>
 
-	<script>
-	  socket = io.connect();
-	  socket.on('show task', showTask);
-          
-          socket.on('game loaded', function() {
-	    $('#status').html('Loaded.');
-	  });
-	</script>
+        <script>
+          socket = io.connect();
+          socket.on('show task', showTask);
+              
+              socket.on('game loaded', function() {
+            $('#status').html('Loaded.');
+          });
+        </script>
 
         <style type="text/css">
         body {
@@ -75,9 +76,9 @@
             margin: 10px;
         }
 
-	.hide {
-	    display: none;
-	}
+        .hide {
+            display: none;
+        }
 
         .first img {
             display: none;
@@ -92,13 +93,14 @@
         }
         </style>
     </head>
+    
     <body class="first">
         <div>
-	    <button id="newgame">New game</button>
-	    <button id="next">Next</button>
+        <button id="newgame">New game</button>
+        <button id="next">Next</button>
         </div>
-	<span id="status">Status</span>
-	<br>
+        <span id="status">Status</span>
+        <br>
         <img id="question"></img>
         <br/>
         <img id="choice_0"></img>
