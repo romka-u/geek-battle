@@ -51,14 +51,9 @@
                 socket.emit('new game');
             });
 
-            $('#set-nickname').submit(function (ev) {
-                socket.emit('nickname', $('#nick').val(), function (set) {
-                    if (!set) {
-                        clear();
-                        return $('#chat').addClass('nickname-set');
-                    }
-                    $('#nickname-err').css('visibility', 'visible');
-                });
+            $('#set-nickname').submit(function () {
+                socket.emit('nickname', $('#nick').val());
+                $('#splash').css('visibility', 'hidden');
                 return false;
             });
 
@@ -145,6 +140,25 @@
         </style>
 
         <style>
+            #splash {
+                position: absolute;
+                z-index: 100;
+                width: 800;
+                height: 620;
+                background: #eee;                
+                top: 10px;
+                left: 50%;
+                margin-left: -400;
+            }
+            #splash p {
+                margin-top: 150px;
+                font: 16px Helvetica;
+            }
+            #nickname-err {
+                margin-top: 10px;
+                color: #a00;
+                visibility: hidden;
+            }
             #messages {
                 height: 130px;
                 background: #eee;
@@ -223,14 +237,19 @@
                 background: #fff;
                 position: relative;
             }
-            #send-message input {
+            input {
                 height: 30px;
                 padding: 0 10px;
                 line-height: 30px;
-                vertical-align: middle;
+                vertical-align: middle;                
+            }
+            #send-message input {
                 width: 710px;
             }
-            #send-message input:focus {
+            #set-nickname input {
+                width: 140px;
+            }
+            input:focus {
                 outline: 0;
             }
             #send-message button {
@@ -292,6 +311,14 @@
     </head>
 
     <body class="first">
+        <div id="splash">
+            <p>Enter your nickname:</p>
+            <form id="set-nickname">
+                <input id="nick">
+                <button>Ok</button>
+            </form>
+            <p id="nickname-err">This nickname is already used</p>
+        </div>
         <table cellpadding=10 height=600 width=800 align="center" border="1">
             <tr>
                 <td width="120">

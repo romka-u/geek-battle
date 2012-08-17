@@ -73,12 +73,16 @@ function get_tasks(socket) {
 nicknames = {}
 
 io.sockets.on('connection', function (socket) {
-    socket.next_task = 0;
-    socket.nickname = nick = (socket.id).toString().substr(0, 7);
-    nicknames[nick] = nick
-    socket.broadcast.emit('announcement', nick + ' connected');
-    io.sockets.emit('nicknames', nicknames);
-
+    socket.on('nickname', function(nick, fn) {
+        console.log("received nickname " + nick)
+        socket.next_task = 0;
+        socket.nickname = nick;
+        nicknames[nick] = nick;
+        socket.broadcast.emit('announcement', nick + ' connected');
+        io.sockets.emit('nicknames', nicknames);
+        socket.emit('announcement', 'Welcome to Geek-Battle, ' + nick + '!');
+    });
+    
     socket.on('get task', function() {
         socket.emit('show task', tasks[socket.next_task]);
         if (socket.next_task < 5)
