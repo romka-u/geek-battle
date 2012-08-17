@@ -70,8 +70,14 @@ function get_tasks(socket) {
     }
 }
 
+nicknames = {}
+
 io.sockets.on('connection', function (socket) {
     socket.next_task = 0;
+    socket.nickname = nick = (socket.id).toString().substr(0, 7);
+    nicknames[nick] = nick
+    socket.broadcast.emit('announcement', nick + ' connected');
+    io.sockets.emit('nicknames', nicknames);
 
     socket.on('get task', function() {
         socket.emit('show task', tasks[socket.next_task]);
@@ -82,5 +88,17 @@ io.sockets.on('connection', function (socket) {
     socket.on('new game', function() {
         socket.next_task = 0;
         get_tasks(socket);
+    });
+
+    socket.on('user message', function (msg) {
+        socket.broadcast.emit('user message', socket.nickname, msg);
+    });
+
+    socket.on('disconnect', function () {
+        if (!socket.nickname) return;
+
+        delete nicknames[socket.nickname];
+        socket.broadcast.emit('announcement', socket.nickname + ' disconnected');
+        socket.broadcast.emit('nicknames', nicknames);
     });
 });
