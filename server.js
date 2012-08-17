@@ -1,6 +1,6 @@
 var express = require('express'),
     $ = require('jquery'),
-    socketio = require('socketio');
+    socketio = require('socket.io');
 
 var app = express.createServer();
 
