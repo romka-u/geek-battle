@@ -29,6 +29,7 @@
                 $('#choice_' + i).attr('src', url + '&type=choice&number=' + i);
                 $('#choice_' + i).addClass(i === task.correct ? 'correct' : 'incorrect');
             }
+	    $('.hide').removeClass('hide');
         }
 
         function showTasksSelection(tasks) {
@@ -58,7 +59,6 @@
           
           socket.on('game loaded', function() {
 	    $('#status').html('Loaded.');
-	    $('.hide').removeClass('hide');
 	  });
 	</script>
 
