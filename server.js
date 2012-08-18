@@ -105,8 +105,10 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('new game', function() {
-        for (var s in nicknames)
+        for (var s in nicknames) {
             next_task[s] = 0;
+            scores[s] = 0;
+        }
         get_tasks(socket);
     });
 
