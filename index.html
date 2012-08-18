@@ -5,6 +5,7 @@
         </title>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <script src="http://hidden-wildwood-8127.herokuapp.com/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="https://raw.github.com/anast1989/jquery.timers/master/jquery.timers.js"></script>
         <script type="text/javascript">
 
         function getTask() {
@@ -28,7 +29,7 @@
             $('.incorrect').removeClass('incorrect');
             for (var i = 0; i < 4; i++) {
                 $('#choice_' + i).attr('src', url + '&type=choice&number=' + i);
-                $('#choice_' + i).addClass(i === task.correct ? 'correct' : 'incorrect');
+                $('#choice_' + i).attr('correct', i === task.correct);
             }
             $('.hide').removeClass('hide');
         }
@@ -43,31 +44,39 @@
 
         $(function() {
             // $.getJSON('/tasks', showTasksSelection);
-            $('#next').on('click', function() {
-                socket.emit('get task');
-            });
+            for (var i = 0; i < 4; i++) {
+                $('#choice_' + i).click(function() {
+                    $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
+                    socket.emit('get task', $(this).attr('correct') == "true");
+                });
+                // $('#choice_' + i).extend({res: false});
+            }
+
             $('#newgame').on('click', function() {
                 $('#status').html('Loading...');
                 socket.emit('new game');
             });
 
-            $('#set-nickname').submit(function () {
+            $('#set-nickname').submit(function() {
                 socket.emit('nickname', $('#nick').val());
                 $('#splash').css('visibility', 'hidden');
                 return false;
             });
 
-            $('#send-message').submit(function () {
+            $('#send-message').submit(function() {
                 message('me', $('#message').val());
                 socket.emit('user message', $('#message').val());
                 clear();
-                $('#lines').get(0).scrollTop = 10000000;
                 return false;
             });
 
             function clear () {
                 $('#message').val('').focus();
             };
+
+            $('img').on('click', function() {
+                $(this)
+            });
         });
 
         </script>
@@ -77,7 +86,23 @@
             socket.on('show task', showTask);
               
             socket.on('game loaded', function() {
-                $('#status').html('Loaded.');
+                $('#status').everyTime(1000, 'timer', function(it) {
+                    $(this).html('Game starts in ' + (5-it));
+                }, 5);
+                $('#status').oneTime(5050, 'timer2', function() {
+                    socket.emit('get task', false);
+                    game_duration = 30;
+                    $(this).html('Game ends in ' + game_duration);
+                    $('#status').everyTime(1000, 'gametimer', function(it) {
+                        $(this).html('Game ends in ' + (game_duration-it));
+                    }, game_duration);
+                    $('#status').oneTime(game_duration * 1000, 'endtimer', function() {
+                        $('#question').attr('src', 'http://260days.ca/wp-content/uploads/2011/03/done.gif');
+                        for (var i = 0; i < 4; i++)
+                            $('#choice_' + i).addClass('hide');
+                        $(this).html('Game over!');
+                    });
+                });
             });
  
             socket.on('announcement', function (msg) {
@@ -90,6 +115,16 @@
                     $('#nicknames').append($('<b>').text(nicknames[i]));
                     $('#nicknames').append($('<br>'));
                 }
+            });
+
+            socket.on('scores', function(nicknames, scores, tasks) {
+                $('#nicknames').empty().append($('<span>Online: </span><br>'));
+                for (var i in nicknames) {
+                    total = tasks[i] - 1;
+                    if (total < 0) total = 0;
+                    $('#nicknames').append($('<b>').text(nicknames[i] + ": " + scores[i] + " of " + total));
+                    $('#nicknames').append($('<br>'));
+                } 
             });
 
             socket.on('user message', message);
@@ -108,6 +143,7 @@
 
             function message (from, msg) {
                   $('#lines').append($('<p>').append($('<b>').text(from), msg));
+                  $('#lines').get(0).scrollTop = 10000000;
             }
 
         </script>
@@ -327,7 +363,6 @@
                 <td align="center" valign="top">
                     <div>
                     <button id="newgame">New game</button>
-                    <button id="next">Next</button>
                     </div>
                     <span id="status">Status</span>
                     <br>

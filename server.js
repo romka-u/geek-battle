@@ -56,21 +56,31 @@ $.ajaxSettings.xhr = function () {
 
 var tasks = [];
 
-function get_tasks(socket) {
+function get_tasks() {
     tasks = [];
-    for (var i = 0; i < 5; i++) {
+    task_count = 10;
+    for (var i = 0; i < task_count; i++) {
         $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
-            {type: 'base-conversion', level: '3'}, 
+            {type: 'base-conversion', level: '1'}, 
             function(task) {
                 tasks.push(task);
                 console.log(task);
-                if (tasks.length == 5)
-                    socket.emit('game loaded');
+                if (tasks.length == task_count)
+                    io.sockets.emit('game loaded');
             });
     }
 }
 
 nicknames = {}
+scores = {}
+next_task = {}
+
+function send_next_task(socket) {
+    console.log("send " + next_task[socket.nickname] + " task to " + socket.nickname);
+    socket.emit('show task', tasks[next_task[socket.nickname]]);
+    if (next_task[socket.nickname] < tasks.length)
+        next_task[socket.nickname] += 1;
+}
 
 io.sockets.on('connection', function (socket) {
     socket.on('nickname', function(nick, fn) {
@@ -78,19 +88,25 @@ io.sockets.on('connection', function (socket) {
         socket.next_task = 0;
         socket.nickname = nick;
         nicknames[nick] = nick;
+        scores[nick] = 0;
         socket.broadcast.emit('announcement', nick + ' connected');
         io.sockets.emit('nicknames', nicknames);
         socket.emit('announcement', 'Welcome to Geek-Battle, ' + nick + '!');
     });
     
-    socket.on('get task', function() {
-        socket.emit('show task', tasks[socket.next_task]);
-        if (socket.next_task < 5)
-            socket.next_task += 1
+    socket.on('get task', function(ans) {
+        // if (ans == false) setTimeout(send_next_task(socket), 7000);
+        // else send_next_task(socket);
+        if (ans) {
+            scores[socket.nickname] += 1;
+        }
+        send_next_task(socket);
+        io.sockets.emit('scores', nicknames, scores, next_task);
     });
 
     socket.on('new game', function() {
-        socket.next_task = 0;
+        for (var s in nicknames)
+            next_task[s] = 0;
         get_tasks(socket);
     });
 
@@ -102,6 +118,7 @@ io.sockets.on('connection', function (socket) {
         if (!socket.nickname) return;
 
         delete nicknames[socket.nickname];
+        delete scores[socket.nickname];
         socket.broadcast.emit('announcement', socket.nickname + ' disconnected');
         socket.broadcast.emit('nicknames', nicknames);
     });
