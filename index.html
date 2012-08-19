@@ -5,7 +5,8 @@
         </title>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <script src="http://hidden-wildwood-8127.herokuapp.com/socket.io/socket.io.js"></script>
-        <script type="text/javascript" src="https://raw.github.com/anast1989/jquery.timers/master/jquery.timers.js"></script>
+        <script type="text/javascript" src="jquery.timers.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
         <script type="text/javascript">
 
         function getTask() {
@@ -22,6 +23,7 @@
                 return;
             }
 
+            // $('#help').html(help);
             $(document.body).removeClass('first');
             var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
             $('#question').attr('src', url + '&type=question');
@@ -53,7 +55,7 @@
             }
 
             $('#newgame').on('click', function() {
-                $('#status').html('Loading...');
+                $('#status').html('Waiting for players...');
                 socket.emit('new game');
             });
 
@@ -91,38 +93,37 @@
                 }, 5);
                 $('#status').oneTime(5050, 'timer2', function() {
                     socket.emit('get task', false);
-                    game_duration = 30;
+                    game_duration = 45;
                     $(this).html('Game ends in ' + game_duration);
                     $('#status').everyTime(1000, 'gametimer', function(it) {
                         $(this).html('Game ends in ' + (game_duration-it));
-                    }, game_duration);
+                    }, game_duration - 1);
                     $('#status').oneTime(game_duration * 1000, 'endtimer', function() {
                         $('#question').attr('src', 'http://260days.ca/wp-content/uploads/2011/03/done.gif');
                         for (var i = 0; i < 4; i++)
                             $('#choice_' + i).addClass('hide');
                         $(this).html('Game over!');
+                        // $('#help').html('');
+                        socket.emit('game over');
                     });
                 });
             });
  
             socket.on('announcement', function (msg) {
                 $('#lines').append($('<p>').append($('<em>').text(msg)));
+                $('#lines').get(0).scrollTop = 10000000;
             });
 
-            socket.on('nicknames', function (nicknames) {
+            socket.on('players', function(players) {
                 $('#nicknames').empty().append($('<span>Online: </span><br>'));
-                for (var i in nicknames) {
-                    $('#nicknames').append($('<b>').text(nicknames[i]));
-                    $('#nicknames').append($('<br>'));
-                }
-            });
-
-            socket.on('scores', function(nicknames, scores, tasks) {
-                $('#nicknames').empty().append($('<span>Online: </span><br>'));
-                for (var i in nicknames) {
-                    total = tasks[i] - 1;
+                for (var pl in players) {
+                    total = players[pl].next_task - 1;
                     if (total < 0) total = 0;
-                    $('#nicknames').append($('<b>').text(nicknames[i] + ": " + scores[i] + " of " + total));
+                    text = pl;
+                    if (players[pl].score != null) text = text + ": " + players[pl].score + " of " + total;
+                    tag = '<b>';
+                    if (players[pl].ready) tag = '<i>';
+                    $('#nicknames').append($(tag).text(text));
                     $('#nicknames').append($('<br>'));
                 } 
             });
@@ -176,173 +177,7 @@
         </style>
 
         <style>
-            #splash {
-                position: absolute;
-                z-index: 100;
-                width: 800;
-                height: 620;
-                background: #eee;                
-                top: 10px;
-                left: 50%;
-                margin-left: -400;
-            }
-            #splash p {
-                margin-top: 150px;
-                font: 16px Helvetica;
-            }
-            #nickname-err {
-                margin-top: 10px;
-                color: #a00;
-                visibility: hidden;
-            }
-            #messages {
-                height: 130px;
-                background: #eee;
-            }
-            #messages em {
-                text-shadow: 0 1px 0 #fff;
-                color: #999;
-            }
-            #messages p {
-                padding: 0;
-                margin: 0;
-                font: 12px Helvetica, Arial;
-                padding: 5px 10px;
-            }
-            #messages p b {
-                display: inline-block;
-                padding-right: 10px;
-            }
-            #messages p:nth-child(even) {
-                background: #fafafa;
-            }
-            #nicknames {
-                width: 100%;
-                height: 100%;
-                background: #eee;
-                padding: 2px 4px 4px;
-                font: 14px Helvetica;
-            }
-            #nicknames span {
-                color: #000;
-            }
-            #nicknames b {
-                display: inline-block;
-                color: #fff;
-                background: #999;
-                padding: 3px 6px;
-                margin-top: 5px;
-                -webkit-border-radius: 10px;
-                -moz-border-radius: 10px;
-                border-radius: 10px;
-                text-shadow: 0 1px 0 #666;
-            }
-            #messages #lines {
-                height: 130px;
-                overflow: auto;
-                overflow-x: hidden;
-                overflow-y: auto;
-            }
-            #messages #lines::-webkit-scrollbar {
-                width: 6px;
-                height: 6px;
-            }
-            #messages #lines::-webkit-scrollbar-button:start:decrement,
-            #messages #lines ::-webkit-scrollbar-button:end:increment {
-                display: block;
-                height: 10px;
-            }
-            #messages #lines::-webkit-scrollbar-button:vertical:increment {
-                background-color: #fff;
-            }
-            #messages #lines::-webkit-scrollbar-track-piece {
-                background-color: #fff;
-                -webkit-border-radius: 3px;
-            }
-            #messages #lines::-webkit-scrollbar-thumb:vertical {
-                height: 50px;
-                background-color: #ccc;
-                -webkit-border-radius: 3px;
-            }
-            #messages #lines::-webkit-scrollbar-thumb:horizontal {
-                width: 50px;
-                background-color: #fff;
-                -webkit-border-radius: 3px;
-            }
-            #send-message {
-                background: #fff;
-                position: relative;
-            }
-            input {
-                height: 30px;
-                padding: 0 10px;
-                line-height: 30px;
-                vertical-align: middle;                
-            }
-            #send-message input {
-                width: 710px;
-            }
-            #set-nickname input {
-                width: 140px;
-            }
-            input:focus {
-                outline: 0;
-            }
-            #send-message button {
-                position: absolute;
-                top: 5px;
-                right: 5px;
-            }
-            button {
-                margin: 0;
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                user-select: none;
-                display: inline-block;
-                text-decoration: none;
-                background: #43a1f7;
-                background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #43a1f7), color-stop(1, #377ad0));
-                background: -webkit-linear-gradient(top, #43a1f7 0%, #377ad0 100%);
-                background: -moz-linear-gradient(top, #43a1f7 0%, #377ad0 100%);
-                background: linear-gradient(top, #43a1f7 0%, #377ad0 100%);
-                border: 1px solid #2e70c4;
-                -webkit-border-radius: 16px;
-                -moz-border-radius: 16px;
-                border-radius: 16px;
-                color: #fff;
-                font-family: "lucida grande", sans-serif;
-                font-size: 11px;
-                font-weight: normal;
-                line-height: 1;
-                padding: 3px 10px 5px 10px;
-                text-align: center;
-                text-shadow: 0 -1px 1px #2d6dc0;
-            }
-            button:hover,
-            button.hover {
-                background: darker;
-                background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #43a1f7), color-stop(1, #2e70c4));
-                background: -webkit-linear-gradient(top, #43a1f7 0%, #2e70c4 100%);
-                background: -moz-linear-gradient(top, #43a1f7 0%, #2e70c4 100%);
-                background: linear-gradient(top, #43a1f7 0%, #2e70c4 100%);
-                border: 1px solid #2e70c4;
-                cursor: pointer;
-                text-shadow: 0 -1px 1px #2c6bbb;
-            }
-            button:active,
-            button.active {
-                background: #2e70c4;
-                border: 1px solid #2e70c4;
-                border-bottom: 1px solid #2861aa;
-                text-shadow: 0 -1px 1px #2b67b5;
-            }
-            button:focus,
-            button.focus {
-                outline: none;
-                -webkit-box-shadow: 0 1px 0 0 rgba(255,255,255,0.40), 0 0 4px 0 #377ad0;
-                -moz-box-shadow: 0 1px 0 0 rgba(255,255,255,0.40), 0 0 4px 0 #377ad0;
-                box-shadow: 0 1px 0 0 rgba(255,255,255,0.40), 0 0 4px 0 #377ad0;
-            }
+            
         </style>
     </head>
 
@@ -364,7 +199,9 @@
                     <div>
                     <button id="newgame">New game</button>
                     </div>
-                    <span id="status">Status</span>
+                    <span id="status">Press 'New game' to begin</span>
+                    <br>
+                    <span id="help"></span>
                     <br>
                     <img id="question"></img>
                     <br/>

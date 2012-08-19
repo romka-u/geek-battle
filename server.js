@@ -11,6 +11,7 @@ var app = express.createServer();
 
 app.configure(function () {
     app.set('views', __dirname);
+    app.use(express.static(__dirname + '/public'));
 
     // make a custom html template
     app.register('.html', {
@@ -54,16 +55,22 @@ $.ajaxSettings.xhr = function () {
     return new XMLHttpRequest;
 }
 
-var tasks = [];
+tasks = [];
+players = {}
+task_desc = [];
 
 function get_tasks() {
     tasks = [];
     task_count = 10;
     for (var i = 0; i < task_count; i++) {
+        curtask = task_desc[Math.floor(Math.random() * task_desc.length)];
+    
+        // WARNING!!!
+        // If responses will be shuffled, descriptions will not match.
         $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
-            {type: 'base-conversion', level: '1'}, 
+            {type: curtask.type, level: '1'}, 
             function(task) {
-                tasks.push(task);
+                tasks.push(task);                
                 console.log(task);
                 if (tasks.length == task_count)
                     io.sockets.emit('game loaded');
@@ -71,26 +78,39 @@ function get_tasks() {
     }
 }
 
-nicknames = {}
-scores = {}
-next_task = {}
+$.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/tasks', 
+    {}, 
+    function(tasks) {
+        task_desc = tasks;
+    });
+
 
 function send_next_task(socket) {
-    console.log("send " + next_task[socket.nickname] + " task to " + socket.nickname);
-    socket.emit('show task', tasks[next_task[socket.nickname]]);
-    if (next_task[socket.nickname] < tasks.length)
-        next_task[socket.nickname] += 1;
+    if (!players[socket.nick].ready) return;
+    socket.emit('show task', tasks[players[socket.nick].next_task]);
+    // if (players[socket.nick].next_task < tasks.length)
+    players[socket.nick].next_task += 1;
+}
+
+function init_new_game() {
+    for (var pl in players) {
+        players[pl].score = 0;
+        players[pl].next_task = 0;
+    }
+    get_tasks();    
 }
 
 io.sockets.on('connection', function (socket) {
     socket.on('nickname', function(nick, fn) {
         console.log("received nickname " + nick)
-        socket.next_task = 0;
-        socket.nickname = nick;
-        nicknames[nick] = nick;
-        scores[nick] = 0;
+        socket.nick = nick;
+        players[nick] = {
+            score: null,
+            next_task: 0,
+            ready: false
+        };
         socket.broadcast.emit('announcement', nick + ' connected');
-        io.sockets.emit('nicknames', nicknames);
+        io.sockets.emit('players', players);
         socket.emit('announcement', 'Welcome to Geek-Battle, ' + nick + '!');
     });
     
@@ -98,30 +118,39 @@ io.sockets.on('connection', function (socket) {
         // if (ans == false) setTimeout(send_next_task(socket), 7000);
         // else send_next_task(socket);
         if (ans) {
-            scores[socket.nickname] += 1;
+            players[socket.nick].score += 1;
         }
         send_next_task(socket);
-        io.sockets.emit('scores', nicknames, scores, next_task);
+        io.sockets.emit('players', players);
     });
 
     socket.on('new game', function() {
-        for (var s in nicknames) {
-            next_task[s] = 0;
-            scores[s] = 0;
-        }
-        get_tasks(socket);
+        if (players[socket.nick].ready) return;
+
+        players[socket.nick].ready = true;
+        all = true;
+        for (var pl in players)
+            if (!players[pl].ready)
+                all = false;
+        if (all) init_new_game();
+
+        io.sockets.emit('players', players);
+    });
+
+    socket.on('game over', function() {
+        players[socket.nick].ready = false;
+        io.sockets.emit('players', players);
     });
 
     socket.on('user message', function (msg) {
-        socket.broadcast.emit('user message', socket.nickname, msg);
+        socket.broadcast.emit('user message', socket.nick, msg);
     });
 
     socket.on('disconnect', function () {
-        if (!socket.nickname) return;
+        if (!socket.nick) return;
 
-        delete nicknames[socket.nickname];
-        delete scores[socket.nickname];
-        socket.broadcast.emit('announcement', socket.nickname + ' disconnected');
-        socket.broadcast.emit('nicknames', nicknames);
+        delete players[socket.nick];
+        socket.broadcast.emit('announcement', socket.nick + ' disconnected');
+        socket.broadcast.emit('players', players);
     });
 });
