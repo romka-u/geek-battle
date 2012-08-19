@@ -1,6 +1,9 @@
             #help {
                 font: 16px Helvetica;
             }
+            #images {
+                width: 100%;
+            }
             #splash {
                 position: absolute;
                 z-index: 100;

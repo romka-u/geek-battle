@@ -68,7 +68,7 @@ function get_tasks() {
         // WARNING!!!
         // If responses will be shuffled, descriptions will not match.
         $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
-            {type: curtask.type, level: '1'}, 
+            {type: curtask.type, level: '2'}, 
             function(task) {
                 tasks.push(task);                
                 console.log(task);

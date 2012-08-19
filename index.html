@@ -4,8 +4,10 @@
             Task viewer
         </title>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script type="text/javascript" src="jquery-ui-1.7.2.custom.min.js"></script>
         <script src="http://geek-battle.herokuapp.com/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="jquery.timers.js"></script>
+        <script type="text/javascript" src="jquery.flip.js"></script>
         <link rel="stylesheet" type="text/css" href="style.css">
         <script type="text/javascript">
 
@@ -50,6 +52,12 @@
                 $('#choice_' + i).click(function() {
                     $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
                     socket.emit('get task', $(this).attr('correct') == "true");
+                    $('#images').css('background-color', $(this).attr('correct') == "true" ? '#00ff00' : '#ff0000');
+                    $('#images').flip({
+                        direction: 'rl',
+                        speed: 300,
+                        color: '#ffffff'
+                    });
                 });
                 // $('#choice_' + i).extend({res: false});
             }
@@ -60,6 +68,7 @@
             });
 
             $('#set-nickname').submit(function() {
+                if ($.trim($('#nick').val()) == "") return false;
                 socket.emit('nickname', $('#nick').val());
                 $('#splash').css('visibility', 'hidden');
                 return false;
@@ -75,10 +84,6 @@
             function clear () {
                 $('#message').val('').focus();
             };
-
-            $('img').on('click', function() {
-                $(this)
-            });
         });
 
         </script>
@@ -93,7 +98,7 @@
                 }, 5);
                 $('#status').oneTime(5050, 'timer2', function() {
                     socket.emit('get task', false);
-                    game_duration = 45;
+                    game_duration = 60;
                     $(this).html('Game ends in ' + game_duration);
                     $('#status').everyTime(1000, 'gametimer', function(it) {
                         $(this).html('Game ends in ' + (game_duration-it));
@@ -167,6 +172,10 @@
             display: none;
         }
 
+        .green {
+            background-color: #00ff00;
+        }
+
         .correct:hover {
             border: #0F0 solid 4px;
         }
@@ -200,16 +209,18 @@
                     <button id="newgame">New game</button>
                     </div>
                     <span id="status">Press 'New game' to begin</span>
-                    <br>
+                    <br/>
                     <span id="help"></span>
-                    <br>
-                    <img id="question"></img>
                     <br/>
-                    <img id="choice_0"></img>
-                    <img id="choice_1"></img>
-                    <br/>
-                    <img id="choice_2"></img>
-                    <img id="choice_3"></img>
+                    <div id="images">
+                        <img id="question"></img>
+                        <br/>
+                        <img id="choice_0"></img>
+                        <img id="choice_1"></img>
+                        <br/>
+                        <img id="choice_2"></img>
+                        <img id="choice_3"></img>
+                    </div>
                 </td>
             </tr>
             <tr height="20%">
