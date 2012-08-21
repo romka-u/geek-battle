@@ -96,7 +96,7 @@
                 }, 5);
                 $('#status').oneTime(5050, 'timer2', function() {
                     socket.emit('get task', false);
-                    game_duration = 25;
+                    game_duration = 60;
                     $(this).html('Game ends in ' + game_duration);
                     $('#status').everyTime(1000, 'gametimer', function(it) {
                         $(this).html('Game ends in ' + (game_duration-it));
