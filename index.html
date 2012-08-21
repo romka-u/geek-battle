@@ -19,9 +19,7 @@
 
         function showTask(task) {
             if (task == null) {
-                $('#question').attr('src', 'http://260days.ca/wp-content/uploads/2011/03/done.gif');
-                for (var i = 0; i < 4; i++)
-                    $('#choice_' + i).addClass('hide');
+                $('.answers').addClass('hide');
                 return;
             }
 
@@ -47,11 +45,11 @@
         }
 
         $(function() {
-            // $.getJSON('/tasks', showTasksSelection);
             for (var i = 0; i < 4; i++) {
                 $('#choice_' + i).click(function() {
                     $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
                     socket.emit('get task', $(this).attr('correct') == "true");
+                    $('.answers').addClass('hide');
                     $('#images').css('background-color', $(this).attr('correct') == "true" ? '#00ff00' : '#ff0000');
                     $('#images').flip({
                         direction: 'rl',
@@ -59,11 +57,11 @@
                         color: '#ffffff'
                     });
                 });
-                // $('#choice_' + i).extend({res: false});
             }
 
             $('#newgame').on('click', function() {
                 $('#status').html('Waiting for players...');
+                $('#box-table').css('visibility', 'hidden');
                 socket.emit('new game');
             });
 
@@ -98,16 +96,14 @@
                 }, 5);
                 $('#status').oneTime(5050, 'timer2', function() {
                     socket.emit('get task', false);
-                    game_duration = 60;
+                    game_duration = 25;
                     $(this).html('Game ends in ' + game_duration);
                     $('#status').everyTime(1000, 'gametimer', function(it) {
                         $(this).html('Game ends in ' + (game_duration-it));
                     }, game_duration - 1);
                     $('#status').oneTime(game_duration * 1000, 'endtimer', function() {
-                        $('#question').attr('src', 'http://260days.ca/wp-content/uploads/2011/03/done.gif');
-                        for (var i = 0; i < 4; i++)
-                            $('#choice_' + i).addClass('hide');
-                        $(this).html('Game over!');
+                        $('.answers').addClass('hide');
+                        $(this).html('<h2>Game over!</h2>');
                         // $('#help').html('');
                         socket.emit('game over');
                     });
@@ -125,12 +121,32 @@
                     total = players[pl].next_task - 1;
                     if (total < 0) total = 0;
                     text = pl;
-                    if (players[pl].score != null) text = text + ": " + players[pl].score + " of " + total;
+                    if (players[pl].score != null) text = text + ": " + players[pl].score +
+                        " (Q" + players[pl].next_task + ")";
                     tag = '<b>';
                     if (players[pl].ready) tag = '<i>';
                     $('#nicknames').append($(tag).text(text));
                     $('#nicknames').append($('<br>'));
                 } 
+            });
+
+            socket.on('results', function(answers, players) {
+                $('#box-table').css('visibility', 'visible');
+                header = '<th>Nickname</th><th>Score</th><th>Solved</th><th>Answers</th>'
+                table = '';
+                for (var pl in players) {
+                    if (players[pl].score == null) return;
+                    img = '';
+                    $.each(answers[pl], function(index, value) { 
+                        if (value) img += '<img src="Box_Green.png">';
+                        else img += '<img src="Box_Red.png">';
+                    });
+                    table += '<tr><td>' + pl + '</td><td>' +
+                        players[pl].score + '</td><td>' +
+                        players[pl].correct + ' of ' + (players[pl].next_task-1) + '</td><td>' +
+                        img + '</td></tr>';
+                }
+                $('#box-table').html('<table>' + header + table + '</table>');
             });
 
             socket.on('user message', message);
@@ -159,9 +175,12 @@
             text-align: center;
             padding-top: 20px;
         }
-        img {
+        .answers {
             padding: 10px;
             border: #FFF 4px solid;
+        }
+        .answers:hover {
+            border: #AAA solid 4px;
         }
         
         .hide {
@@ -175,18 +194,6 @@
         .green {
             background-color: #00ff00;
         }
-
-        .correct:hover {
-            border: #0F0 solid 4px;
-        }
-
-        .incorrect:hover {
-            border: #F00 solid 4px;
-        }
-        </style>
-
-        <style>
-            
         </style>
     </head>
 
@@ -210,16 +217,17 @@
                     </div>
                     <span id="status">Press 'New game' to begin</span>
                     <br/>
-                    <span id="help"></span>
-                    <br/>
-                    <div id="images">
-                        <img id="question"></img>
+                    2<div id="images">
+                        <img id="question" class="answers"></img>
                         <br/>
-                        <img id="choice_0"></img>
-                        <img id="choice_1"></img>
+                        <img id="choice_0" class="answers"></img>
+                        <img id="choice_1" class="answers"></img>
                         <br/>
-                        <img id="choice_2"></img>
-                        <img id="choice_3"></img>
+                        <img id="choice_2" class="answers"></img>
+                        <img id="choice_3" class="answers"></img>
+                        <table id="box-table">
+                            <tr><th>Results</th></tr>
+                        </table>
                     </div>
                 </td>
             </tr>

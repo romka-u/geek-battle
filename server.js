@@ -56,7 +56,8 @@ $.ajaxSettings.xhr = function () {
 }
 
 tasks = [];
-players = {}
+players = {};
+answers = {};
 task_desc = [];
 
 function get_tasks() {
@@ -93,9 +94,12 @@ function send_next_task(socket) {
 }
 
 function init_new_game() {
+    answers = {};
     for (var pl in players) {
         players[pl].score = 0;
+        players[pl].correct = 0;
         players[pl].next_task = 0;
+        answers[pl] = [];
     }
     get_tasks();    
 }
@@ -107,7 +111,8 @@ io.sockets.on('connection', function (socket) {
         players[nick] = {
             score: null,
             next_task: 0,
-            ready: false
+            ready: false,
+            correct: 0
         };
         socket.broadcast.emit('announcement', nick + ' connected');
         io.sockets.emit('players', players);
@@ -118,7 +123,12 @@ io.sockets.on('connection', function (socket) {
         // if (ans == false) setTimeout(send_next_task(socket), 7000);
         // else send_next_task(socket);
         if (ans) {
-            players[socket.nick].score += 1;
+            players[socket.nick].score += 5;
+            players[socket.nick].correct += 1;
+            answers[socket.nick].push(true);
+        } else if (players[socket.nick].next_task > 0) {
+            players[socket.nick].score -= 3;
+            answers[socket.nick].push(false);
         }
         send_next_task(socket);
         io.sockets.emit('players', players);
@@ -128,6 +138,7 @@ io.sockets.on('connection', function (socket) {
         if (players[socket.nick].ready) return;
 
         players[socket.nick].ready = true;
+        players[socket.nick].score = null;
         all = true;
         for (var pl in players)
             if (!players[pl].ready)
@@ -140,6 +151,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('game over', function() {
         players[socket.nick].ready = false;
         io.sockets.emit('players', players);
+        socket.emit('results', answers, players);
     });
 
     socket.on('user message', function (msg) {
