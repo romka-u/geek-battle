@@ -31,6 +31,10 @@ app.get('/', function (req, res) {
     res.render('index.html', { layout: false });
 });
 
+app.get('/practice', function (req, res) {
+    res.render('practice.html', { layout: false });
+});
+
 /**
  * App listen.
  */
@@ -62,7 +66,7 @@ task_desc = [];
 
 function get_tasks() {
     tasks = [];
-    task_count = 10;
+    task_count = 3;
     for (var i = 0; i < task_count; i++) {
         curtask = task_desc[Math.floor(Math.random() * task_desc.length)];
     
@@ -118,10 +122,12 @@ io.sockets.on('connection', function (socket) {
         io.sockets.emit('players', players);
         socket.emit('announcement', 'Welcome to Geek-Battle, ' + nick + '!');
     });
+
+    socket.on('get tasks description', function() {
+        socket.emit('tasks description', task_desc);
+    });
     
     socket.on('get task', function(ans) {
-        // if (ans == false) setTimeout(send_next_task(socket), 7000);
-        // else send_next_task(socket);
         if (ans) {
             players[socket.nick].score += 5;
             players[socket.nick].correct += 1;
