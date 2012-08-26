@@ -66,7 +66,7 @@ task_desc = [];
 
 function get_tasks() {
     tasks = [];
-    task_count = 3;
+    task_count = 10;
     for (var i = 0; i < task_count; i++) {
         curtask = task_desc[Math.floor(Math.random() * task_desc.length)];
     
@@ -110,7 +110,6 @@ function init_new_game() {
 
 io.sockets.on('connection', function (socket) {
     socket.on('nickname', function(nick, fn) {
-        console.log("received nickname " + nick)
         socket.nick = nick;
         players[nick] = {
             score: null,
@@ -161,7 +160,10 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('user message', function (msg) {
-        socket.broadcast.emit('user message', socket.nick, msg);
+        if (msg == "/beep")
+            socket.broadcast.emit('beep');
+        else
+            socket.broadcast.emit('user message', socket.nick, msg);
     });
 
     socket.on('disconnect', function () {

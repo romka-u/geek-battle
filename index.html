@@ -69,12 +69,16 @@
                 if ($.trim($('#nick').val()) == "") return false;
                 socket.emit('nickname', $('#nick').val());
                 $('#splash').css('visibility', 'hidden');
+                // $('#sound-enter')[0].play();
                 return false;
             });
 
             $('#send-message').submit(function() {
-                message('me', $('#message').val());
-                socket.emit('user message', $('#message').val());
+                var msg = $.trim($('#message').val());
+                if (msg == "") return false;
+                message('me', msg);
+                socket.emit('user message', msg);
+                // $('#sound-message-sent')[0].play();
                 clear();
                 return false;
             });
@@ -91,12 +95,16 @@
             socket.on('show task', showTask);
               
             socket.on('game loaded', function() {
+                $('#sound-waiting-for-game')[0].play();
                 $('#status').everyTime(1000, 'timer', function(it) {
                     $(this).html('Game starts in ' + (5-it));
                 }, 5);
+                $('#status').oneTime(4000, 'timer-sound', function() {
+                    $('#sound-game-started')[0].play();
+                });
                 $('#status').oneTime(5050, 'timer2', function() {
                     socket.emit('get task', false);
-                    game_duration = 20;
+                    game_duration = 60;
                     $(this).html('Game ends in ' + game_duration);
                     $('#status').everyTime(1000, 'gametimer', function(it) {
                         $(this).html('Game ends in ' + (game_duration-it));
@@ -112,6 +120,7 @@
  
             socket.on('announcement', function (msg) {
                 $('#lines').append($('<p>').append($('<em>').text(msg)));
+                $('#sound-enter')[0].play();
                 $('#lines').get(0).scrollTop = 10000000;
             });
 
@@ -184,9 +193,15 @@
                   message('System', e ? e : 'A unknown error occurred');
             });
 
+            socket.on('beep', function() {
+                $('#sound-beep')[0].play();
+            });
+
             function message (from, msg) {
                   $('#lines').append($('<p>').append($('<b>').text(from), msg));
                   $('#lines').get(0).scrollTop = 10000000;
+                  if (from != 'System')
+                      $('#sound-message-received')[0].play();
             }
 
         </script>
@@ -262,7 +277,30 @@
                 </td>
             </tr>
         </table>
-        Press Ctrl+R to choose a different nickname. Press Ctrl+W to log out.
+        Press Ctrl+R to choose a different nickname. Press Ctrl+W to log out.<br>
+        <audio preload="auto" id="sound-game-started">
+            <source src="audio/Game started.mp3"></source>
+            <source src="audio/Game started.ogg"></source>
+        </audio>
+        <audio preload="auto" id="sound-message-sent">
+            <source src="audio/Message sent.mp3"></source>
+            <source src="audio/Message sent.ogg"></source>
+        </audio>
+        <audio preload="auto" id="sound-message-received">
+            <source src="audio/Message Received.mp3"></source>
+            <source src="audio/Message Received.ogg"></source>
+        </audio>
+        <audio preload="auto" id="sound-beep">
+            <source src="audio/Beep.mp3"></source>
+            <source src="audio/Beep.ogg"></source>
+        </audio>
+        <audio preload="auto" id="sound-waiting-for-game">
+            <source src="audio/Waiting for game.mp3"></source>
+            <source src="audio/Waiting for game.ogg"></source>
+        </audio>
+        <audio preload="auto" id="sound-enter">
+            <source src="audio/Enter.mp3"></source>
+            <source src="audio/Enter.ogg"></source>
+        </audio>
     </body>
 </html>
-
