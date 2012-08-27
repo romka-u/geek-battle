@@ -217,7 +217,7 @@
             };
          
             var showTooltip = function(event) {
-                num = event.toElement.id.substr(3);
+                num = event.target.id.substr(3);
                 task = game_tasks[num];
                 var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
         
