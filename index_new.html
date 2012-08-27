@@ -15,13 +15,17 @@
 
         <script type="text/javascript">
 
+        game_playing = false;
+        game_tasks = [];
+        my_answers = [];
+
         function showTask(task) {
-            if (task == null) {
-                $('.answers').addClass('hide');
+            if (task == null || !game_playing) {
+                $('.answers').hide();
                 return;
             }
 
-            // $('#help').html(help);
+            game_tasks.push(task);
             $(document.body).removeClass('first');
             var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
             $('#question').attr('src', url + '&type=question');
@@ -44,9 +48,11 @@
         }
 
         $(function() {
+            $('div.tooltip').hide();
             for (var i = 0; i < 4; i++) {
                 $('#choice_' + i).click(function() {
                     $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
+                    my_answers.push($(this).attr('id').substr(7));
                     socket.emit('get task', $(this).attr('correct') == "true");
                     $('.answers').hide();
                     $('#images').css('background-color', $(this).attr('correct') == "true" ? '#00ff00' : '#ff0000');
@@ -152,9 +158,12 @@
         <script>
             socket = io.connect();
             socket.on('show task', showTask);
-              
+
             socket.on('game loaded', function() {
+                $('#newgame').attr('disabled', true);
                 $('#sound-waiting-for-game')[0].play();
+                game_tasks = [];
+                my_answers = [];
                 $('#status').everyTime(1000, 'timer', function(it) {
                     $(this).html('Game starts in ' + (5-it));
                 }, 5);
@@ -164,6 +173,7 @@
                 $('#status').oneTime(5050, 'timer2', function() {
                     socket.emit('get task', false);
                     game_duration = 60;
+                    game_playing = true;
                     $(this).html('Game ends in ' + game_duration);
                     $('#status').everyTime(1000, 'gametimer', function(it) {
                         $(this).html('Game ends in ' + (game_duration-it));
@@ -173,6 +183,8 @@
                         $(this).html('<h2>Game over!</h2>');
                         // $('#help').html('');
                         socket.emit('game over');
+                        game_playing = false;
+                        $('#newgame').attr('disabled', false);
                     });
                 });
             });
@@ -197,6 +209,34 @@
                 } 
             });
 
+            var changeTooltipPosition = function(event) {
+                if (!event) event = window.event;
+                var tooltipX = event.pageX - 8;
+                var tooltipY = event.pageY + 8;
+                $('div.tooltip').css({top: tooltipY, left: tooltipX});
+            };
+         
+            var showTooltip = function(event) {
+                num = event.toElement.id.substr(3);
+                task = game_tasks[num];
+                var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
+        
+                html = '<img id="question" src="' + url + '&type=question"/> <br/>';
+                for (var i = 0; i < 4; i++) {
+                    style = 'style="border: #FFF 4px solid;"';
+                    if (("" + i) === my_answers[num]) style = 'style="border: #F00 4px solid;"';
+                    if (i === task.correct) style = 'style="border: #0F0 4px solid;"';
+                    html += '<img class="answers" src="' + url + '&type=choice&number=' + i + '" ' + style + '/>';
+                    if (i == 1) html += '<br/>';
+                }
+                $('div.tooltip').show().html(html);
+                changeTooltipPosition();
+            };
+         
+            var hideTooltip = function() {
+                $('div.tooltip').hide();
+            };
+
             socket.on('results', function(answers, players) {
                 $('#box-table').css('visibility', 'visible');
                 header = '<th>Nickname</th><th>Score</th><th>Solved</th><th>Answers</th>'
@@ -209,9 +249,13 @@
                     pl = list[i].nick;
                     if (players[pl].score == null) return;
                     img = '';
-                    $.each(answers[pl], function(index, value) { 
-                        if (value) img += '<img src="Box_Green.png">';
-                        else img += '<img src="Box_Red.png">';
+                    $.each(answers[pl], function(index, value) {
+                        box = "Box_Red";
+                        if (value) box = "Box_Green";
+
+                        new_img = '<img src="' + box + '.png">';
+                        if (pl === $('#nick').val()) new_img = '<img src="' + box + '.png" id="ans' + index + '">';
+                        img += new_img;
                     });
                     rclass = "other"
                     if (i == 0) rclass = "gold";
@@ -235,6 +279,16 @@
                     table += row;
                 }
                 $('#box-table').html('<table width="100%" align="center">' + header + table + '</table>');
+
+                for (var i in list) {
+                    if (list[i].nick != $('#nick').val()) continue;
+                    $.each(answers[list[i].nick], function(index, value) {
+                        $('#ans' + index)
+                            .on('mousemove', changeTooltipPosition)
+                            .on('mouseenter', showTooltip)
+                            .on('mouseleave', hideTooltip);
+                    });
+                }
             });
 
             socket.on('user message', message);
@@ -389,6 +443,8 @@
             <source src="audio/Enter.mp3"></source>
             <source src="audio/Enter.ogg"></source>
         </audio>
+
+        <div class="tooltip"></div>
     </body>
 </html>
 
