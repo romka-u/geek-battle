@@ -103,11 +103,11 @@
             #splash {
                 position: absolute;
                 z-index: 100;
-                width: 850;
+                width: 950;
                 height: 95%;
                 background: #eee;
                 left: 50%;
-                margin-left: -400;
+                margin-left: -450;
             }
             #splash p {
                 margin-top: 150px;
