@@ -1,14 +1,18 @@
 <html>
     <head>
         <title>
-            Task viewer
+            Geek Battle
         </title>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <script type="text/javascript" src="jquery-ui-1.7.2.custom.min.js"></script>
-        <script src="http://geek-battle.herokuapp.com/socket.io/socket.io.js"></script>
+        <script src="socket.io/socket.io.js"></script>
         <script type="text/javascript" src="jquery.timers.js"></script>
         <script type="text/javascript" src="jquery.flip.js"></script>
+        <script src="http://gsgd.co.uk/sandbox/jquery/easing/jquery.easing.1.3.js"></script>
+        <script type="text/javascript" src="jquery.lavalamp.js"></script>
+
         <link rel="stylesheet" type="text/css" href="style.css">
+
         <script type="text/javascript">
 
         function showTask(task) {
@@ -27,7 +31,8 @@
                 $('#choice_' + i).attr('src', url + '&type=choice&number=' + i);
                 $('#choice_' + i).attr('correct', i === task.correct);
             }
-            $('.hide').removeClass('hide');
+            $('#images').show();
+            $('.answers').show();
         }
 
         function showTasksSelection(tasks) {
@@ -43,7 +48,7 @@
                 $('#choice_' + i).click(function() {
                     $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
                     socket.emit('get task', $(this).attr('correct') == "true");
-                    $('.answers').addClass('hide');
+                    $('.answers').hide();
                     $('#images').css('background-color', $(this).attr('correct') == "true" ? '#00ff00' : '#ff0000');
                     $('#images').flip({
                         direction: 'rl',
@@ -52,6 +57,13 @@
                     });
                 });
             }
+
+            $('#nicknames').on('click', function() {
+                if ($('#options').is(':visible'))
+                    $('#options').fadeOut();
+                else
+                    $('#options').show();
+            });
 
             $('#newgame').on('click', function() {
                 $('#status').html('Waiting for players...');
@@ -62,8 +74,10 @@
             $('#set-nickname').submit(function() {
                 if ($.trim($('#nick').val()) == "") return false;
                 socket.emit('nickname', $('#nick').val());
-                $('#splash').css('visibility', 'hidden');
-                // $('#sound-enter')[0].play();
+                $('#splash').slideUp(2000, "easeInExpo");
+                $('#main-table').removeClass('hide');
+                showLavaLamps();
+                $('#options').hide();
                 return false;
             });
 
@@ -79,9 +93,60 @@
 
             function clear () {
                 $('#message').val('').focus();
-            };
+            }
+
+            function showLavaLamps() {
+                $("#ll-level").lavaLamp({
+                    fx: "easeOutBack", 
+                    speed: 700,
+                    click: function(event, menuItem) {
+                        task_level = menuItem.getAttribute('level');
+                    }
+                });
+
+                $("#ll-gametype").lavaLamp({
+                    fx: "easeOutBack", 
+                    speed: 700,
+                    click: function(event, menuItem) {
+                        // q_cnt = menuItem.getAttribute('qn');
+                    }
+                });
+
+                $("#ll-gamelength").lavaLamp({
+                    fx: "easeOutBack", 
+                    speed: 700,
+                    click: function(event, menuItem) {
+                        // q_cnt = menuItem.getAttribute('qn');
+                    }
+                });
+            }
         });
 
+/*
+        function make_task_list(tasks) {
+            list = "<li><a href='#'>Mixed</a>";
+            task_desc = tasks;
+            for (var i = 0; i < tasks.length; i++)
+                list += "<li task_id='" + i + "''><a href='#'>" + tasks[i].name + "</a></li>";
+            $('#ll1').html(list);
+
+            $("#ll1").lavaLamp({
+                fx: "backout", 
+                speed: 700,
+                click: function(event, menuItem) {
+                    id = menuItem.getAttribute('task_id');
+                    task_kind = id;
+                    if (id == null)
+                        $('#task_description').html("Use random tasks");
+                    else
+                        $('#task_description').html(
+                            task_desc[id].description.replace(/\n/g, '<br/>').replace(/http:\S+/g, '<a href="$&">$&</a>')
+                        );
+                    return false;
+                }
+            });
+        }
+*/
         </script>
 
         <script>
@@ -104,7 +169,7 @@
                         $(this).html('Game ends in ' + (game_duration-it));
                     }, game_duration - 1);
                     $('#status').oneTime(game_duration * 1000, 'endtimer', function() {
-                        $('.answers').addClass('hide');
+                        $('#images').hide();
                         $(this).html('<h2>Game over!</h2>');
                         // $('#help').html('');
                         socket.emit('game over');
@@ -119,7 +184,7 @@
             });
 
             socket.on('players', function(players) {
-                $('#nicknames').empty().append($('<span>Online: </span><br>'));
+                $('#nicknames').empty().append($('<select><option>New room</option></select>'));
                 for (var pl in players) {
                     total = players[pl].next_task - 1;
                     if (total < 0) total = 0;
@@ -129,7 +194,6 @@
                     tag = '<b>';
                     if (players[pl].ready) tag = '<i>';
                     $('#nicknames').append($(tag).text(text));
-                    $('#nicknames').append($('<br>'));
                 } 
             });
 
@@ -170,7 +234,7 @@
 
                     table += row;
                 }
-                $('#box-table').html('<table>' + header + table + '</table>');
+                $('#box-table').html('<table width="100%" align="center">' + header + table + '</table>');
             });
 
             socket.on('user message', message);
@@ -199,35 +263,9 @@
             }
 
         </script>
-
-        <style type="text/css">
-        body {
-            text-align: center;
-            padding-top: 20px;
-        }
-        .answers {
-            padding: 10px;
-            border: #FFF 4px solid;
-        }
-        .answers:hover {
-            border: #AAA solid 4px;
-        }
-        
-        .hide {
-            display: none;
-        }
-
-        .first img {
-            display: none;
-        }
-
-        .green {
-            background-color: #00ff00;
-        }
-        </style>
     </head>
 
-    <body class="first">
+    <body>
         <div id="splash">
             <p>Enter your nickname:</p>
             <form id="set-nickname">
@@ -236,42 +274,97 @@
             </form>
             <p id="nickname-err">This nickname is already used</p>
         </div>
+
         <div class="caption">
             Geek Battle
         </div>
-        <table cellpadding=10 height=600 width=800 align="center" border="1">
-            <tr>
-                <td width="120">
-                    <div id="nicknames"></div>
-                </td>
-                <td align="center" valign="top">
-                    <div>
+
+        <table align="center" class="hide" id="main-table" width="800">
+            <tr><td>
+                <div class="back-divs" id="nicknames" text-align="left">
+                    <select><option>New room</option></select>
+                </div>
+            </td></tr>
+
+            <tr><td>
+                <div class="back-divs" id="options" style="text-align: center;">
+                    <table align="center">
+                        <tr>
+                            <td width="150">
+                                Game type:
+                            </td>
+                            <td>
+                                <ul class="lavaLampNoImage" id="ll-gametype">
+                                    <li type="time"><a href="#">Time</a>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Game duration:
+                            <td>
+                                <ul class="lavaLampNoImage" id="ll-gamelength">
+                                    <li length="15"><a href="#">15</a>
+                                    <li length="30"><a href="#">30</a>
+                                    <li length="60"><a href="#">60</a>
+                                    <li length="120"><a href="#">120</a>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Questions:
+                            <td>
+                                <select>
+                                    <option>Mixed</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Level:
+                            <td>
+                                <ul class="lavaLampNoImage" id="ll-level">
+                                    <li level="1"><a href="#">Easy</a></li>
+                                    <li level="2"><a href="#">Medium</a></li>
+                                    <li level="3"><a href="#">Hard</a></li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td></tr>
+            
+            <tr><td align="center">
+                <div class="back-divs" id="questions" style="min-height: 350px; background: #fff; text-align: center;">
                     <button id="newgame">New game</button>
-                    </div>
+                    <br/>
                     <span id="status">Press 'New game' to begin</span>
                     <br/>
-                    <div id="images">
-                        <img id="question" class="answers"></img>
+                    <div id="images" class="hide">
+                        <img id="question" class="answers"/>
                         <br/>
-                        <img id="choice_0" class="answers"></img>
-                        <img id="choice_1" class="answers"></img>
+                        <img id="choice_0" class="answers"/>
+                        <img id="choice_1" class="answers"/>
                         <br/>
-                        <img id="choice_2" class="answers"></img>
-                        <img id="choice_3" class="answers"></img>
-                        <table id="box-table">
-                            <tr><th>Results</th></tr>                            
-                        </table>
+                        <img id="choice_2" class="answers"/>
+                        <img id="choice_3" class="answers"/>
                     </div>
-                </td>
-            </tr>
-            <tr height="20%">
-                <td colspan=2 valign="middle">
+                    <table id="box-table" align="center">
+                            <tr><th>Results</th></tr>                            
+                    </table>
+                </div>
+            </td></tr>
+
+            <tr><td>
+                <div class="back-divs" id="chat">
                     <div id="messages"><div id="lines" width="100%"></div></div>
                     <form id="send-message"><input id="message"><button>Send</button></form>
-                </td>
-            </tr>
+                </div>
+            </td></tr>
         </table>
-        Press Ctrl+R to choose a different nickname. Press Ctrl+W to log out.<br>
+        Press Ctrl+R to choose a different nickname. Press Ctrl+W to log out.
+
         <audio preload="auto" id="sound-game-started">
             <source src="audio/Game started.mp3"></source>
             <source src="audio/Game started.ogg"></source>
@@ -298,3 +391,4 @@
         </audio>
     </body>
 </html>
+

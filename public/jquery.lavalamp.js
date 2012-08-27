@@ -78,8 +78,7 @@ $.fn.lavaLamp = function(o) {
         function setCurr(el) {
             $back.css({ 
                 "left": el.offsetLeft+"px", 
-                "width": el.offsetWidth+"px", 
-                "top": el.offsetTop+"px"
+                "width": el.offsetWidth+"px"
             });
             curr = el;
         };
@@ -89,8 +88,7 @@ $.fn.lavaLamp = function(o) {
                 $.dequeue(this, "fx"); }
             ).animate({
                 width: el.offsetWidth,
-                left: el.offsetLeft,
-                top: el.offsetTop
+                left: el.offsetLeft
             }, o.speed, o.fx);
         };
 
