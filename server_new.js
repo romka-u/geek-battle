@@ -67,7 +67,7 @@ options = {
     questions: 'mixed'
 };
 
-function ask_for_task(send_game_loaded) {
+function ask_for_task() {
     if (options.questions == 'mixed')
         curtask = task_desc[Math.floor(Math.random() * task_desc.length)];
     else
@@ -81,7 +81,7 @@ function ask_for_task(send_game_loaded) {
         function(task) {
             tasks.push(task);                
             console.log(task);
-            if (tasks.length == task_count && send_game_loaded)
+            if (tasks.length == task_count)
                 io.sockets.emit('game loaded');
         });
 }
@@ -90,7 +90,7 @@ function get_tasks() {
     tasks = [];
     task_count = 3;
     for (var i = 0; i < task_count; i++)
-        ask_for_task(true);
+        ask_for_task();
 }
 
 $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/tasks', 
@@ -104,8 +104,8 @@ function send_next_task(socket) {
     if (!players[socket.nick].ready) return;
     socket.emit('show task', tasks[players[socket.nick].next_task]);
     players[socket.nick].next_task += 1;
-    if (players[socket.nick].next_task > task_count - 3)
-        ask_for_task(false);
+    if (players[socket.nick].next_task > task_count - 2)
+        ask_for_task();
 }
 
 function init_new_game() {
