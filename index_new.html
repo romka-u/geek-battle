@@ -40,7 +40,7 @@
         }
 
         function showTasksSelection(tasks) {
-            var options = $('#tasks')[0].options;
+            var options = $('#select-questions')[0].options;
             $.each(tasks, function() {
                 var option = new Option(this.name, this.type);
                 options[options.length] = option;
@@ -82,7 +82,7 @@
                 socket.emit('nickname', $('#nick').val());
                 $('#splash').slideUp(2000, "easeInExpo");
                 $('#main-table').removeClass('hide');
-                showLavaLamps();
+                // showLavaLamps();
                 $('#options').hide();
                 return false;
             });
@@ -126,6 +126,18 @@
                     }
                 });
             }
+
+            $('#select-duration').change(function() {
+                socket.emit('set-duration', $(this).val());
+            });
+
+            $('#select-level').change(function() {
+                socket.emit('set-level', $(this).val());
+            });
+
+            $('#select-questions').change(function() {
+                socket.emit('set-questions', $(this).val());
+            });
         });
 
 /*
@@ -157,10 +169,20 @@
 
         <script>
             socket = io.connect();
+            socket.emit('get tasks description');
+            socket.on('tasks description', showTasksSelection);
+
             socket.on('show task', showTask);
+
+            socket.on('options', function(options) {
+                $('#select-duration').val(options.duration);
+                $('#select-level').val(options.level);
+                $('#select-questions').val(options.questions);
+            });
 
             socket.on('game loaded', function() {
                 $('#newgame').attr('disabled', true);
+                $('select').attr('disabled', true);
                 $('#sound-waiting-for-game')[0].play();
                 game_tasks = [];
                 my_answers = [];
@@ -172,7 +194,7 @@
                 });
                 $('#status').oneTime(5050, 'timer2', function() {
                     socket.emit('get task', false);
-                    game_duration = 60;
+                    game_duration = parseInt($('#select-duration').val());
                     game_playing = true;
                     $(this).html('Game ends in ' + game_duration);
                     $('#status').everyTime(1000, 'gametimer', function(it) {
@@ -185,6 +207,7 @@
                         socket.emit('game over');
                         game_playing = false;
                         $('#newgame').attr('disabled', false);
+                        $('select').attr('disabled', false);
                     });
                 });
             });
@@ -348,29 +371,35 @@
                                 Game type:
                             </td>
                             <td>
-                                <ul class="lavaLampNoImage" id="ll-gametype">
-                                    <li type="time"><a href="#">Time</a>
-                                </ul>
+                                <select id='select-gametype'>
+                                    <option value='time'>Time</option>
+                                </select>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 Game duration:
                             <td>
-                                <ul class="lavaLampNoImage" id="ll-gamelength">
+                                <!-- <ul class="lavaLampNoImage" id="ll-gamelength">
                                     <li length="15"><a href="#">15</a>
                                     <li length="30"><a href="#">30</a>
                                     <li length="60"><a href="#">60</a>
                                     <li length="120"><a href="#">120</a>
-                                </ul>
+                                </ul> -->
+                                <select id='select-duration'>
+                                    <option value='15'>15</option>
+                                    <option value='30'>30</option>
+                                    <option value='60'>60</option>
+                                    <option value='120'>120</option>
+                                </select>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 Questions:
                             <td>
-                                <select>
-                                    <option>Mixed</option>
+                                <select id='select-questions'>
+                                    <option value='mixed'>Mixed</option>
                                 </select>
                             </td>
                         </tr>
@@ -378,11 +407,16 @@
                             <td>
                                 Level:
                             <td>
-                                <ul class="lavaLampNoImage" id="ll-level">
+                                <!-- <ul class="lavaLampNoImage" id="ll-level">
                                     <li level="1"><a href="#">Easy</a></li>
                                     <li level="2"><a href="#">Medium</a></li>
                                     <li level="3"><a href="#">Hard</a></li>
-                                </ul>
+                                </ul> -->
+                                <select id='select-level'>
+                                    <option value='1'>Easy</option>
+                                    <option value='2'>Medium</option>
+                                    <option value='3'>Hard</option>
+                                </select>
                             </td>
                         </tr>
                     </table>

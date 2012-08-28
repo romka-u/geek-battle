@@ -59,22 +59,38 @@ tasks = [];
 players = {};
 answers = {};
 task_desc = [];
+task_count = 3;
+
+options = {
+    level: '2',
+    duration: '60',
+    questions: 'mixed'
+};
+
+function ask_for_task(send_game_loaded) {
+    if (options.questions == 'mixed')
+        curtask = task_desc[Math.floor(Math.random() * task_desc.length)];
+    else
+        $.each(task_desc, function(index, value) {
+            if (value.type == options.questions)
+                curtask = value;
+        });
+    
+    $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
+        {type: curtask.type, level: options.level}, 
+        function(task) {
+            tasks.push(task);                
+            console.log(task);
+            if (tasks.length == task_count && send_game_loaded)
+                io.sockets.emit('game loaded');
+        });
+}
 
 function get_tasks() {
     tasks = [];
-    task_count = 12;
-    for (var i = 0; i < task_count; i++) {
-        curtask = task_desc[Math.floor(Math.random() * task_desc.length)];
-    
-        $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
-            {type: curtask.type, level: '2'}, 
-            function(task) {
-                tasks.push(task);                
-                console.log(task);
-                if (tasks.length == task_count)
-                    io.sockets.emit('game loaded');
-            });
-    }
+    task_count = 3;
+    for (var i = 0; i < task_count; i++)
+        ask_for_task(true);
 }
 
 $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/tasks', 
@@ -88,6 +104,8 @@ function send_next_task(socket) {
     if (!players[socket.nick].ready) return;
     socket.emit('show task', tasks[players[socket.nick].next_task]);
     players[socket.nick].next_task += 1;
+    if (players[socket.nick].next_task > task_count - 3)
+        ask_for_task(false);
 }
 
 function init_new_game() {
@@ -113,6 +131,7 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.emit('announcement', nick + ' connected');
         io.sockets.emit('players', players);
         socket.emit('announcement', 'Welcome to Geek-Battle, ' + nick + '!');
+        socket.emit('options', options);
     });
 
     socket.on('get tasks description', function() {
@@ -165,5 +184,29 @@ io.sockets.on('connection', function (socket) {
         delete players[socket.nick];
         socket.broadcast.emit('announcement', socket.nick + ' disconnected');
         socket.broadcast.emit('players', players);
+    });
+
+    socket.on('set-duration', function(duration) {
+        for (pl in players)
+            players[pl].ready = false;
+        options.duration = duration;
+        socket.broadcast.emit('options', options);
+        io.sockets.emit('players', players);
+    });
+
+    socket.on('set-questions', function(questions) {
+        for (pl in players)
+            players[pl].ready = false;
+        options.questions = questions;
+        socket.broadcast.emit('options', options);
+        io.sockets.emit('players', players);
+    });
+
+    socket.on('set-level', function(level) {
+        for (pl in players)
+            players[pl].ready = false;
+        options.level = level;
+        socket.broadcast.emit('options', options);
+        io.sockets.emit('players', players);
     });
 });
