@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <title>
+            Geek Battle
+        </title>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script type="text/javascript" src="jquery-ui-1.7.2.custom.min.js"></script>
+        <script src="socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="jquery.timers.js"></script>
+        <script type="text/javascript" src="jquery.flip.js"></script>
+        <script src="http://gsgd.co.uk/sandbox/jquery/easing/jquery.easing.1.3.js"></script>
+        <script type="text/javascript" src="jquery.lavalamp.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="chat-style.css">
+
+        <script type="text/javascript" src="geekbattle-ui.js"></script>
+        <script type="text/javascript" src="geekbattle-sockets.js"></script>
+    </head>
+
+    <body>
+        <div class="caption">
+            Geek Battle
+        </div>
+
+        <table align="center" id="main-table" width="800">
+            <tr><td>
+                <div class="back-divs">
+                    Добро пожаловать в Geek Battle, многопользовательскую онлайн-игру, участники которой
+                    соревнуются в решении математических задач на скорость.<br>
+                    Игра проходит следующим образом: участникам параллельно задаются вопросы с четырьмя вариантами ответа.
+                    Набор и последовательность вопросов для всех участников одинаковы. Участник выбирает один из четырёх 
+                    вариантов ответа, и переходит к следующему вопросу. За правильный ответ к сумме баллов участника
+                    добавляется 5 очков, за неправильный - вычитается 3. Один раунд длится какое-то фиксированное время
+                    (по умолчанию 60 секунд).<br>
+                    <br>
+                    Технические детали:
+                    <ul>
+                        <li>Для того, чтобы игра началась, необходимо, чтобы каждый игрок нажал кнопку "New game",
+                            тем самым оповестив остальных участников о желании начать раунд. Ники игроков,
+                            готовых к началу игры, выделены зелёным.</li>
+                        <li>Нажатие на кнопку "Options" приводит к появлению/исчезанию панели с настройками игры.</li>
+                        <li>При изменении настроек готовность всех игроков сбрасывается, чтобы убедиться, что каждый игрок
+                            согласен с новым вариантом настроек.</li>
+                    </ul>
+                </div>
+            </td></tr>
+
+            <tr><td>
+                <div class="back-divs" id="options" style="text-align: center;">
+                    <select id='select-questions'>
+                        <option value='mixed'>Mixed</option>
+                    </select>
+                </div>
+            </td></tr>
+            
+            <tr><td align="center">
+                <div class="back-divs" id="questions" style="min-height: 350px; background: #fff; text-align: center;">
+                    <div id="images" class="hide">
+                        <img id="question" class="answers"/>
+                        <br/>
+                        <img id="choice_0" class="answers"/>
+                        <img id="choice_1" class="answers"/>
+                        <br/>
+                        <img id="choice_2" class="answers"/>
+                        <img id="choice_3" class="answers"/>
+                    </div>
+                </div>
+            </td></tr>
+        </table>
+    </body>
+</html>
+

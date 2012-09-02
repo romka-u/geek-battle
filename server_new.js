@@ -119,6 +119,14 @@ function init_new_game() {
     get_tasks();    
 }
 
+function check_new_game() {
+    all = true;
+    for (var pl in players)
+        if (!players[pl].ready)
+            all = false;
+    if (all) init_new_game();
+}
+
 io.sockets.on('connection', function (socket) {
     socket.on('nickname', function(nick, fn) {
         socket.nick = nick;
@@ -156,11 +164,7 @@ io.sockets.on('connection', function (socket) {
 
         players[socket.nick].ready = true;
         players[socket.nick].score = null;
-        all = true;
-        for (var pl in players)
-            if (!players[pl].ready)
-                all = false;
-        if (all) init_new_game();
+        check_new_game();
 
         io.sockets.emit('players', players);
     });
@@ -173,7 +177,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('user message', function (msg) {
         if (msg == "/beep")
-            socket.broadcast.emit('beep');
+            io.sockets.emit('beep');
         else
             socket.broadcast.emit('user message', socket.nick, msg);
     });
@@ -182,6 +186,7 @@ io.sockets.on('connection', function (socket) {
         if (!socket.nick) return;
 
         delete players[socket.nick];
+        check_new_game();
         socket.broadcast.emit('announcement', socket.nick + ' disconnected');
         socket.broadcast.emit('players', players);
     });

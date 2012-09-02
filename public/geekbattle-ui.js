@@ -47,7 +47,7 @@ $(function() {
         });
     }
 
-    $('#nicknames').on('click', function() {
+    $('#button-options').on('click', function() {
         if ($('#options').is(':visible'))
             $('#options').fadeOut();
         else
