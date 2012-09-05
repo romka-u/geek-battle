@@ -3,6 +3,7 @@ socket.emit('get tasks description');
 socket.on('tasks description', showTasksSelection);
 
 socket.on('show task', showTask);
+socket.on('show task example', showTaskExample);
 
 socket.on('options', function(options) {
     $('#select-duration').val(options.duration);
@@ -16,6 +17,7 @@ socket.on('game loaded', function() {
     $('#sound-waiting-for-game')[0].play();
     game_tasks = [];
     my_answers = [];
+    $(this).html('Game starts in 5');
     $('#status').everyTime(1000, 'timer', function(it) {
         $(this).html('Game starts in ' + (5-it));
     }, 5);

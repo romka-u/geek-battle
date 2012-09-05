@@ -31,6 +31,10 @@ app.get('/', function (req, res) {
     res.render('index_new.html', { layout: false });
 });
 
+app.get('/help', function (req, res) {
+    res.render('help.html', { layout: false });
+});
+
 /**
  * App listen.
  */
@@ -157,6 +161,14 @@ io.sockets.on('connection', function (socket) {
         }
         send_next_task(socket);
         io.sockets.emit('players', players);
+    });
+
+    socket.on('get task example', function(task_type) {
+        $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
+        {type: task_type, level: 2}, 
+        function(task) {
+            socket.emit('show task example', task);
+        });
     });
 
     socket.on('new game', function() {

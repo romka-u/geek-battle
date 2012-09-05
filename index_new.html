@@ -16,6 +16,36 @@
 
         <script type="text/javascript" src="geekbattle-ui.js"></script>
         <script type="text/javascript" src="geekbattle-sockets.js"></script>
+
+        <script type="text/javascript">
+            $(function() {
+                for (var i = 0; i < 4; i++) {
+                    $('#choice_' + i).click(function() {
+                        $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
+                        my_answers.push($(this).attr('id').substr(7));
+                        socket.emit('get task', $(this).attr('correct') == "true");
+                        $('.answers').hide();
+                        $('#images').css('background-color', $(this).attr('correct') == "true" ? '#00ff00' : '#ff0000');
+                        $('#images').flip({
+                            direction: 'rl',
+                            speed: 300,
+                            color: '#ffffff'
+                        });
+                    });
+                }
+                $('#select-duration').change(function() {
+                    socket.emit('set-duration', $(this).val());
+                });
+
+                $('#select-level').change(function() {
+                    socket.emit('set-level', $(this).val());
+                });
+
+                $('#select-questions').change(function() {
+                    socket.emit('set-questions', $(this).val());
+                });
+            });
+        </script>
     </head>
 
     <body>

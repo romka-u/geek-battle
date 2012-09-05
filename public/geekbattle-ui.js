@@ -1,6 +1,25 @@
 game_playing = false;
 game_tasks = [];
 my_answers = [];
+task_desc = [];
+
+function showTaskExample(task) {
+    var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
+    $('#question').attr('src', url + '&type=question');
+    $('.correct_answer').removeClass('correct_answer');
+    $('.other_answer').removeClass('other_answer');
+    for (var i = 0; i < 4; i++) {
+        $('#choice_' + i).attr('src', url + '&type=choice&number=' + i);
+        if (i === task.correct) {
+            $('#choice_' + i).addClass('correct_answer');
+            // console.log(i + ' is correct');
+        }
+        else {
+            $('#choice_' + i).addClass('other_answer');
+            // console.log(i + ' is not correct');
+        }
+    }
+}
 
 function showTask(task) {
     if (task == null || !game_playing) {
@@ -24,6 +43,7 @@ function showTask(task) {
 
 function showTasksSelection(tasks) {
     var options = $('#select-questions')[0].options;
+    task_desc = tasks;
     $.each(tasks, function() {
         var option = new Option(this.name, this.type);
         options[options.length] = option;
@@ -32,20 +52,6 @@ function showTasksSelection(tasks) {
 
 $(function() {
     $('div.tooltip').hide();
-    for (var i = 0; i < 4; i++) {
-        $('#choice_' + i).click(function() {
-            $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
-            my_answers.push($(this).attr('id').substr(7));
-            socket.emit('get task', $(this).attr('correct') == "true");
-            $('.answers').hide();
-            $('#images').css('background-color', $(this).attr('correct') == "true" ? '#00ff00' : '#ff0000');
-            $('#images').flip({
-                direction: 'rl',
-                speed: 300,
-                color: '#ffffff'
-            });
-        });
-    }
 
     $('#button-options').on('click', function() {
         if ($('#options').is(':visible'))
@@ -109,18 +115,6 @@ $(function() {
             }
         });
     }
-
-    $('#select-duration').change(function() {
-        socket.emit('set-duration', $(this).val());
-    });
-
-    $('#select-level').change(function() {
-        socket.emit('set-level', $(this).val());
-    });
-
-    $('#select-questions').change(function() {
-        socket.emit('set-questions', $(this).val());
-    });
 });
 
 /*

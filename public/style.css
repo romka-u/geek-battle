@@ -25,6 +25,16 @@
             .answers:hover {
                 border: #AAA solid 4px;
             }
+
+            .correct_answer {
+                padding: 10px;
+                border: #0F0 solid 4px;
+            }
+
+            .other_answer {
+                padding: 14px;
+                /*border: #ffd700 solid 4px;   */
+            }
             
             .hide {
                 display: none;
@@ -99,7 +109,7 @@
             }
             #images {
                 width: 100%;
-                min-height: 250px;
+                min-height: 200px;
             }
             .back-divs {
                 /* position: absolute; */

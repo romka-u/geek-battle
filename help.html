@@ -16,6 +16,29 @@
 
         <script type="text/javascript" src="geekbattle-ui.js"></script>
         <script type="text/javascript" src="geekbattle-sockets.js"></script>
+
+        <script type="text/javascript">
+            $(function() {
+                $('#images').hide();
+                $('#select-questions').change(function() {
+                    found = false;
+                    for (var i = 0; i < task_desc.length; i++)
+                        if (task_desc[i].type == $(this).val()) {
+                            found = true;
+                            $('#task_description').html(
+                                task_desc[i].description.replace(/\n/g, '<br/>').replace(/http:\S+/g, '<a href="$&">$&</a>')
+                            );
+                            socket.emit('get task example', task_desc[i].type);
+                            $('#images').show();
+                            break;
+                        }
+                    if (!found) {
+                        $('#task_description').html('Use random tasks');
+                        $('#images').hide();
+                    }
+                });
+            });
+        </script>
     </head>
 
     <body>
@@ -48,23 +71,23 @@
 
             <tr><td>
                 <div class="back-divs" id="options" style="text-align: center;">
+                    Выберите тип вопросов для получения справки о нём:
                     <select id='select-questions'>
                         <option value='mixed'>Mixed</option>
                     </select>
-                </div>
-            </td></tr>
-            
-            <tr><td align="center">
-                <div class="back-divs" id="questions" style="min-height: 350px; background: #fff; text-align: center;">
-                    <div id="images" class="hide">
-                        <img id="question" class="answers"/>
+                    <br/>
+                    <span>Task example:</span>
+                    <div id="images">
+                        <img id="question" class="other_answer"/>
                         <br/>
-                        <img id="choice_0" class="answers"/>
-                        <img id="choice_1" class="answers"/>
+                        <img id="choice_0"/>
+                        <img id="choice_1"/>
                         <br/>
-                        <img id="choice_2" class="answers"/>
-                        <img id="choice_3" class="answers"/>
+                        <img id="choice_2"/>
+                        <img id="choice_3"/>
                     </div>
+                    <br/>
+                    <span id="task_description">Use random tasks</span>
                 </div>
             </td></tr>
         </table>
