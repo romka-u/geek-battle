@@ -41,6 +41,7 @@ app.get('/vklogin', function (req, res) {
         function(resp) {
             console.log(resp);
         });
+    res.end();
 });
 
 app.get('/help', function (req, res) {
