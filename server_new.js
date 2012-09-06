@@ -31,6 +31,18 @@ app.get('/', function (req, res) {
     res.render('index_new.html', { layout: false });
 });
 
+app.get('/vklogin', function (req, res) {
+    $.getJSON('https://oauth.vk.com/access_token',
+        {
+            client_id: 3112763,
+            client_secret: 'rVHtaJ1Kb4DOdlzPIbrE',
+            code: req.code
+        },
+        function(resp) {
+            console.log(resp);
+        });
+});
+
 app.get('/help', function (req, res) {
     res.render('help.html', { layout: false });
 });
@@ -125,10 +137,13 @@ function init_new_game() {
 
 function check_new_game() {
     all = true;
-    for (var pl in players)
+    any = false;
+    for (var pl in players) {
+        any = true;
         if (!players[pl].ready)
             all = false;
-    if (all) init_new_game();
+    }
+    if (all && any) init_new_game();
 }
 
 io.sockets.on('connection', function (socket) {
