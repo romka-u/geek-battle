@@ -31,16 +31,24 @@ app.get('/', function (req, res) {
     res.render('index_new.html', { layout: false });
 });
 
+    // $.getJSON('https://oauth.vk.com/access_token?client_id=3112763&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=790&callback=?',
+    //     null,
+    //     function(resp) {
+    //         console.log('Answer');
+    //         console.log(resp);
+    //     });
+
+
 app.get('/vklogin', function (req, res) {
-    $.getJSON('https://oauth.vk.com/access_token',
-        {
-            client_id: 3112763,
-            client_secret: 'rVHtaJ1Kb4DOdlzPIbrE',
-            code: req.code
-        },
-        function(resp) {
-            console.log(resp);
-        });
+    console.log(req.query.code);
+    $.ajax({
+        type: "GET",
+        url: "https://oauth.vk.com/access_token",
+        data: "client_id=3112763&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=" + req.query.code,
+        complete: function(msg){
+            console.log(msg);
+        }
+    });
     res.end();
 });
 
@@ -113,6 +121,7 @@ function get_tasks() {
 $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/tasks', 
     {}, 
     function(tasks) {
+        console.log("Tasks received");
         task_desc = tasks;
     });
 
