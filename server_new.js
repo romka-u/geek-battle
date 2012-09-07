@@ -38,13 +38,18 @@ app.get('/', function (req, res) {
     //         console.log(resp);
     //     });
 
+app.get('/vktoken', function (req, res) {
+    console.log(req);
+    res.write(req);
+    res.end();
+});
 
 app.get('/vklogin', function (req, res) {
     console.log(req.query.code);
     $.ajax({
         type: "GET",
         url: "https://oauth.vk.com/access_token",
-        data: "client_id=3112763&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=" + req.query.code,
+        data: "client_id=3112763&redirect_uri=http://geek-battle.herokuapp.com/vktoken&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=" + req.query.code,
         complete: function(msg){
             console.log(msg);
         }
