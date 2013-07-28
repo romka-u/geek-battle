@@ -4,7 +4,7 @@ my_answers = [];
 task_desc = [];
 
 function showTaskExample(task) {
-    var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
+    var url = 'http://geekalarm-nbeloglazov.rhcloud.com/image?id=' + task.id;
     $('#question').attr('src', url + '&type=question');
     $('.correct_answer').removeClass('correct_answer');
     $('.other_answer').removeClass('other_answer');
@@ -29,7 +29,7 @@ function showTask(task) {
 
     game_tasks.push(task);
     $(document.body).removeClass('first');
-    var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
+    var url = 'http://geekalarm-nbeloglazov.rhcloud.com/image?id=' + task.id;
     $('#question').attr('src', url + '&type=question');
     $('.correct').removeClass('correct');
     $('.incorrect').removeClass('incorrect');

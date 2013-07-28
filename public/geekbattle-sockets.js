@@ -74,7 +74,7 @@ var changeTooltipPosition = function(event) {
 var showTooltip = function(event) {
     num = event.target.id.substr(3);
     task = game_tasks[num];
-    var url = 'http://geekbeta-nbeloglazov.dotcloud.com/image?id=' + task.id;
+    var url = 'http://geekalarm-nbeloglazov.rhcloud.com/image?id=' + task.id;
 
     html = '<img id="question" src="' + url + '&type=question"/> <br/>';
     for (var i = 0; i < 4; i++) {

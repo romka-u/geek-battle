@@ -38,18 +38,12 @@ app.get('/', function (req, res) {
     //         console.log(resp);
     //     });
 
-app.get('/vktoken', function (req, res) {
-    console.log(req);
-    res.write(req);
-    res.end();
-});
-
 app.get('/vklogin', function (req, res) {
     console.log(req.query.code);
     $.ajax({
         type: "GET",
         url: "https://oauth.vk.com/access_token",
-        data: "client_id=3112763&redirect_uri=http://geek-battle.herokuapp.com/vktoken&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=" + req.query.code,
+        data: "client_id=3112763&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=" + req.query.code,
         complete: function(msg){
             console.log(msg);
         }
@@ -106,7 +100,7 @@ function ask_for_task() {
                 curtask = value;
         });
     
-    $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
+    $.getJSON('http://geekalarm-nbeloglazov.rhcloud.com/task', 
         {type: curtask.type, level: options.level}, 
         function(task) {
             tasks.push(task);                
@@ -123,7 +117,7 @@ function get_tasks() {
         ask_for_task();
 }
 
-$.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/tasks', 
+$.getJSON('http://geekalarm-nbeloglazov.rhcloud.com/tasks', 
     {}, 
     function(tasks) {
         console.log("Tasks received");
@@ -194,7 +188,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('get task example', function(task_type) {
-        $.getJSON('http://geekbeta-nbeloglazov.dotcloud.com/task', 
+        $.getJSON('http://geekalarm-nbeloglazov.rhcloud.com/task', 
         {type: task_type, level: 2}, 
         function(task) {
             socket.emit('show task example', task);
