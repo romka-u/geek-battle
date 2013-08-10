@@ -1,6 +1,9 @@
 {
     "name": "geek-battle",
     "version": "0.0.1",
+    "scripts": {
+        "start": "nodemon server_new.js"
+    },
     "dependencies": {
         "express": "2.5.x",
         "socket.io": "0.9.1",

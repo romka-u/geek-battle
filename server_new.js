@@ -1,8 +1,33 @@
 var express = require('express'),
     $ = require('jquery'),
+    passport = require('passport'),
+    VKStrategy = require('passport-vkontakte').Strategy,
     socketio = require('socket.io');
 
 var app = express.createServer();
+
+/**
+ * Passport setup
+ */
+passport.serializeUser(function(user, done) {
+      done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+      done(null, obj);
+});
+
+passport.use(new VKStrategy({
+    clientID:     "3112763",
+    clientSecret: "rVHtaJ1Kb4DOdlzPIbrE",
+    callbackURL:  "http://romka.people.yandex.net/auth/vkontakte/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    // User.findOrCreate({ vkontakteId: profile.id }, function (err, user) {
+      return done(null, profile);
+    // });
+  }
+));
 
 /**
  * App configuration.
@@ -11,7 +36,6 @@ var app = express.createServer();
 
 app.configure(function () {
     app.set('views', __dirname);
-    app.use(express.static(__dirname + '/public'));
 
     // make a custom html template
     app.register('.html', {
@@ -21,15 +45,48 @@ app.configure(function () {
           };
         }
     });
+
+    app.use(express.cookieParser());
+    app.use(express.bodyParser());
+    app.use(express.methodOverride());
+    app.use(express.session({ secret: 'romka' }));
+    app.use(passport.initialize());
+    app.use(passport.session());
+    app.use(app.router);
+    app.use(express.static(__dirname + '/public'));
 });
+
+app.get('/auth/vkontakte',
+  passport.authenticate('vkontakte'),
+  function(req, res){
+    // The request will be redirected to vk.com for authentication, so
+    // this function will not be called.
+  });
+
+app.get('/auth/vkontakte/callback', 
+  passport.authenticate('vkontakte', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
 
 /**
  * App routes.
  */
 
-app.get('/', function (req, res) {
+app.get('/login', function(req, res) {
+    res.send("<a href='/auth/vkontakte'>Login with vk.com</a>");
+});
+
+app.get('/', ensureAuthenticated, function (req, res) {
+    // res.send(req.user);
     res.render('index_new.html', { layout: false });
 });
+
+function ensureAuthenticated(req, res, next) {
+      if (req.isAuthenticated()) { return next(); }
+        res.redirect('/login')
+}
 
     // $.getJSON('https://oauth.vk.com/access_token?client_id=3112763&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=790&callback=?',
     //     null,
@@ -37,7 +94,7 @@ app.get('/', function (req, res) {
     //         console.log('Answer');
     //         console.log(resp);
     //     });
-
+/*
 app.get('/vklogin', function (req, res) {
     console.log(req.query.code);
     $.ajax({
@@ -50,7 +107,7 @@ app.get('/vklogin', function (req, res) {
     });
     res.end();
 });
-
+*/
 app.get('/help', function (req, res) {
     res.render('help.html', { layout: false });
 });
