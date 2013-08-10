@@ -88,26 +88,6 @@ function ensureAuthenticated(req, res, next) {
         res.redirect('/login')
 }
 
-    // $.getJSON('https://oauth.vk.com/access_token?client_id=3112763&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=790&callback=?',
-    //     null,
-    //     function(resp) {
-    //         console.log('Answer');
-    //         console.log(resp);
-    //     });
-/*
-app.get('/vklogin', function (req, res) {
-    console.log(req.query.code);
-    $.ajax({
-        type: "GET",
-        url: "https://oauth.vk.com/access_token",
-        data: "client_id=3112763&client_secret=rVHtaJ1Kb4DOdlzPIbrE&code=" + req.query.code,
-        complete: function(msg){
-            console.log(msg);
-        }
-    });
-    res.end();
-});
-*/
 app.get('/help', function (req, res) {
     res.render('help.html', { layout: false });
 });
