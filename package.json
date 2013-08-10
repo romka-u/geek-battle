@@ -9,7 +9,9 @@
         "socket.io": "0.9.1",
         "active-x-obfuscator": "latest",
         "jquery": "latest",
-        "xmlhttprequest": "latest"
+        "xmlhttprequest": "latest",
+        "passport": "latest",
+        "passport-vkontakte": "latest"
     },
     "engines": {
         "node": "0.8.x",
