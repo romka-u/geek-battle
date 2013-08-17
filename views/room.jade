@@ -45,14 +45,9 @@ html
             });
 
     body
-        #splash
-            p Successful VK login!
-            form#set-nickname
-                button Ok
-
         .caption Geek Battle
 
-        table#main-table.hide(align="center", width="800")
+        table#main-table(align="center", width="800")
             tr
                 td
                     #nicknames.back-divs(text-align="left")
@@ -119,3 +114,4 @@ html
         include audios.html
 
         .tooltip
+        input#nick.hide(value="#{nick}")

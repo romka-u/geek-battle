@@ -53,6 +53,12 @@ function showTasksSelection(tasks) {
 $(function() {
     $('div.tooltip').hide();
 
+    // emit nickname message
+    socket.emit('nickname', $('#nick').val());
+    socket.nick = $('#nick').val();
+    $('#options').hide();
+
+    // options button setup
     $('#button-options').on('click', function() {
         if ($('#options').is(':visible'))
             $('#options').fadeOut();
@@ -64,16 +70,6 @@ $(function() {
         $('#status').html('Waiting for players...');
         $('#box-table').css('visibility', 'hidden');
         socket.emit('new game');
-    });
-
-    $('#set-nickname').submit(function() {
-        // if ($.trim($('#nick').val()) == "") return false;
-        socket.emit('nickname', "foo"); // $('#nick').val());
-        $('#splash').slideUp(2000, "easeInExpo");
-        $('#main-table').removeClass('hide');
-        // showLavaLamps();
-        $('#options').hide();
-        return false;
     });
 
     $('#send-message').submit(function() {

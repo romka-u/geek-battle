@@ -79,16 +79,16 @@ app.get('/login', function(req, res) {
 });
 
 // oh my code...
-var last_user;
+users = {};
 
 app.get('/', ensureAuthenticated, function (req, res) {
     // res.send(req.user);
-    last_user = req.user;
-    res.render('room.jade', { layout: false });
+    users[req.user.id] = req.user;
+    res.render('room.jade', { layout: false, nick: req.user.id });
 });
 
 function ensureAuthenticated(req, res, next) {
-      if (req.isAuthenticated()) { return next(); }
+    if (req.isAuthenticated()) { return next(); }
         res.redirect('/login')
 }
 
@@ -197,23 +197,22 @@ function check_new_game() {
 }
 
 io.sockets.on('connection', function (socket) {
-    socket.on('nickname', function(nick, fn) {
-        nick = last_user.id;
-        name = last_user.displayName;
+    socket.on('nickname', function(nick) {
+        console.log(nick + ' connected');
+        name = users[nick].displayName;
         socket.nick = nick;
         players[nick] = {
             score: null,
             next_task: 0,
             ready: false,
             correct: 0,
-            name: last_user.displayName,
-            photo: last_user.photos[0].value
+            name: users[nick].displayName,
+            photo: users[nick].photos[0].value
         };
         socket.broadcast.emit('announcement', name + ' connected');
         io.sockets.emit('players', players);
         socket.emit('announcement', 'Welcome to Geek-Battle, ' + name + '!');
         socket.emit('options', options);
-        socket.emit('mynick', nick);
     });
 
     socket.on('get tasks description', function() {
@@ -266,10 +265,12 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         if (!socket.nick) return;
+        socket.broadcast.emit('announcement', players[socket.nick].name + ' disconnected');
 
         delete players[socket.nick];
+        delete users[socket.nick];
+
         check_new_game();
-        socket.broadcast.emit('announcement', socket.nick + ' disconnected');
         socket.broadcast.emit('players', players);
     });
 
