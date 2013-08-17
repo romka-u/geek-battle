@@ -140,7 +140,9 @@
                 margin-top: 150px;
                 font: 16px Helvetica;
             }
-            
+            img.avatar {
+                z-index: 10;
+            }
 
             .lavaLampNoImage {
                 position: relative;

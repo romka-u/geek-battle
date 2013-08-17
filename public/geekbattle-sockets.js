@@ -55,12 +55,15 @@ socket.on('players', function(players) {
     for (var pl in players) {
         total = players[pl].next_task - 1;
         if (total < 0) total = 0;
-        text = pl;
+        text = players[pl].name;
         if (players[pl].score != null) text = text + ": " + players[pl].score +
             " (Q" + players[pl].next_task + ")";
         tag = '<b>';
         if (players[pl].ready) tag = '<i>';
-        $('#nicknames').append($(tag).text(text));
+        element = $(tag).attr('align', 'center');
+        element.append($("<img>").attr('src', players[pl].photo).attr('class', 'avatar'))
+        element.append($("<div>").text(text));
+        $('#nicknames').append(element);
     } 
 });
 
@@ -109,7 +112,7 @@ socket.on('results', function(answers, players) {
             if (value) box = "Box_Green";
 
             new_img = '<img src="' + box + '.png">';
-            if (pl === $('#nick').val()) new_img = '<img src="' + box + '.png" id="ans' + index + '">';
+            if (pl == socket.nick) new_img = '<img src="' + box + '.png" id="ans' + index + '">';
             img += new_img;
         });
         rclass = "other"
@@ -126,7 +129,7 @@ socket.on('results', function(answers, players) {
             if (!e12) rclass = "bronze";
         }
 
-        row = '<tr class="' + rclass + '">' + '<td>' + pl + '</td><td>' +
+        row = '<tr class="' + rclass + '">' + '<td>' + players[pl].name + '</td><td>' +
             players[pl].score + '</td><td>' +
             players[pl].correct + ' of ' + (players[pl].next_task-1) + '</td><td>' +
             img + '</td></tr>';
@@ -136,7 +139,7 @@ socket.on('results', function(answers, players) {
     $('#box-table').html('<table width="100%" align="center">' + header + table + '</table>');
 
     for (var i in list) {
-        if (list[i].nick != $('#nick').val()) continue;
+        if (list[i].nick != socket.nick) continue;
         $.each(answers[list[i].nick], function(index, value) {
             $('#ans' + index)
                 .on('mousemove', changeTooltipPosition)
@@ -144,6 +147,10 @@ socket.on('results', function(answers, players) {
                 .on('mouseleave', hideTooltip);
         });
     }
+});
+
+socket.on('mynick', function(nick) {
+    socket.nick = nick;
 });
 
 socket.on('user message', message);

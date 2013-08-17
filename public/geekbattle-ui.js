@@ -67,8 +67,8 @@ $(function() {
     });
 
     $('#set-nickname').submit(function() {
-        if ($.trim($('#nick').val()) == "") return false;
-        socket.emit('nickname', $('#nick').val());
+        // if ($.trim($('#nick').val()) == "") return false;
+        socket.emit('nickname', "foo"); // $('#nick').val());
         $('#splash').slideUp(2000, "easeInExpo");
         $('#main-table').removeClass('hide');
         // showLavaLamps();

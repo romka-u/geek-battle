@@ -78,8 +78,12 @@ app.get('/login', function(req, res) {
     res.send("<a href='/auth/vkontakte'>Login with vk.com</a>");
 });
 
+// oh my code...
+var last_user;
+
 app.get('/', ensureAuthenticated, function (req, res) {
     // res.send(req.user);
+    last_user = req.user;
     res.render('index_new.html', { layout: false });
 });
 
@@ -194,17 +198,22 @@ function check_new_game() {
 
 io.sockets.on('connection', function (socket) {
     socket.on('nickname', function(nick, fn) {
+        nick = last_user.id;
+        name = last_user.displayName;
         socket.nick = nick;
         players[nick] = {
             score: null,
             next_task: 0,
             ready: false,
-            correct: 0
+            correct: 0,
+            name: last_user.displayName,
+            photo: last_user.photos[0].value
         };
-        socket.broadcast.emit('announcement', nick + ' connected');
+        socket.broadcast.emit('announcement', name + ' connected');
         io.sockets.emit('players', players);
-        socket.emit('announcement', 'Welcome to Geek-Battle, ' + nick + '!');
+        socket.emit('announcement', 'Welcome to Geek-Battle, ' + name + '!');
         socket.emit('options', options);
+        socket.emit('mynick', nick);
     });
 
     socket.on('get tasks description', function() {
@@ -252,7 +261,7 @@ io.sockets.on('connection', function (socket) {
         if (msg == "/beep")
             io.sockets.emit('beep');
         else
-            socket.broadcast.emit('user message', socket.nick, msg);
+            socket.broadcast.emit('user message', players[socket.nick].name, msg);
     });
 
     socket.on('disconnect', function () {
