@@ -11,7 +11,8 @@
         "jquery": "latest",
         "xmlhttprequest": "latest",
         "passport": "latest",
-        "passport-vkontakte": "latest"
+        "passport-vkontakte": "latest",
+        "jade": "latest"
     },
     "engines": {
         "node": "0.8.x",

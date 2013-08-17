@@ -1,0 +1,121 @@
+html
+    head
+        title Geek Battle
+        script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js")
+        script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js")
+        script(src="jquery-ui-1.7.2.custom.min.js")
+        script(src="jquery.timers.js")
+        script(src="jquery.flip.js")
+        script(src="jquery.lavalamp.js")
+        script(src="socket.io/socket.io.js")
+
+        link(rel="stylesheet", type="text/css", href="style.css")
+        link(rel="stylesheet", type="text/css", href="chat-style.css")
+
+        script(src="geekbattle-ui.js")
+        script(src="geekbattle-sockets.js")
+
+        script.
+            $(function() {
+                for (var i = 0; i < 4; i++) {
+                    $('#choice_' + i).click(function() {
+                        $(this).addClass($(this).attr('correct') == "true" ? 'correct' : 'incorrect');
+                        my_answers.push($(this).attr('id').substr(7));
+                        socket.emit('get task', $(this).attr('correct') == "true");
+                        $('.answers').hide();
+                        $('#images').css('background-color', $(this).attr('correct') == "true" ? '#00ff00' : '#ff0000');
+                        $('#images').flip({
+                            direction: 'rl',
+                            speed: 300,
+                            color: '#ffffff'
+                        });
+                    });
+                }
+                $('#select-duration').change(function() {
+                    socket.emit('set-duration', $(this).val());
+                });
+
+                $('#select-level').change(function() {
+                    socket.emit('set-level', $(this).val());
+                });
+
+                $('#select-questions').change(function() {
+                    socket.emit('set-questions', $(this).val());
+                });
+            });
+
+    body
+        #splash
+            p Successful VK login!
+            form#set-nickname
+                button Ok
+
+        .caption Geek Battle
+
+        table#main-table.hide(align="center", width="800")
+            tr
+                td
+                    #nicknames.back-divs(text-align="left")
+            tr
+                td
+                    #options.back-divs(style="text-align: center;")
+                        table(align="center")
+                            tr
+                                td(width=150) Game type:
+                                td
+                                    select#select-gametype
+                                        option(value="time") Time
+
+                            tr
+                                td Game duration:
+                                td
+                                    select#select-duration
+                                        - for len in [15, 30, 60, 120]
+                                            option(value=len)= len
+
+                            tr
+                                td Questions:
+                                td
+                                    select#select-questions
+                                        option(value="mixed") Mixed
+
+                            tr
+                                td Level:
+                                td
+                                    select#select-level
+                                        - for level, i in ["Easy", "Medium", "Hard"]
+                                            option(value=(i+1))= level
+            tr
+                td(align="center")
+                    div#questions.back-divs(style="min-height: 350px; background: #fff; text-align: center;")
+                        button#newgame New game
+                        button#button-options Options
+                        br
+                        span#status Press 'New game' to begin
+                        br
+                        #images.hide
+                            img#question.answers
+                            br
+                            img#choice_0.answers
+                            img#choice_1.answers
+                            br
+                            img#choice_2.answers
+                            img#choice_3.answers
+
+                        table#box-table(align="center")
+                            tr: th Results
+
+            tr
+                td
+                    #chat.back-divs
+                        #messages
+                            #lines(width="100%")
+                        form#send-message
+                            input#message
+                            button Send
+
+        p Press Ctrl+R to choose a different nickname. Press Ctrl+W to log out.
+
+        include audios.html
+
+        .tooltip

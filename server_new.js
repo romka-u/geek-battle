@@ -1,5 +1,6 @@
 var express = require('express'),
     $ = require('jquery'),
+    jade = require('jade'),
     passport = require('passport'),
     VKStrategy = require('passport-vkontakte').Strategy,
     socketio = require('socket.io');
@@ -33,9 +34,8 @@ passport.use(new VKStrategy({
  * App configuration.
  */
 
-
 app.configure(function () {
-    app.set('views', __dirname);
+    app.set('views', __dirname + "/views");
 
     // make a custom html template
     app.register('.html', {
@@ -84,7 +84,7 @@ var last_user;
 app.get('/', ensureAuthenticated, function (req, res) {
     // res.send(req.user);
     last_user = req.user;
-    res.render('index_new.html', { layout: false });
+    res.render('room.jade', { layout: false });
 });
 
 function ensureAuthenticated(req, res, next) {
